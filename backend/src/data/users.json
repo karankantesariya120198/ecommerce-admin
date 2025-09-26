@@ -1,0 +1,25 @@
+[
+  {
+    "email": "karan@yopmail.com",
+    "password": "d6095a5b237c6bb15a2cb86bf654b672",
+    "iv": "cec5937fa6d5bfeb683c159464aee066",
+    "nickname": "KaranK",
+    "phone": "918866693223",
+    "intro": "Testing Intro",
+    "gender": "male",
+    "agreement": true
+  },
+  {
+    "id": "9d5a2161-a207-4fc3-8d26-d7958c475bdf",
+    "email": "karan1@yopmail.com",
+    "password": "3a2adf08827b8b3a44322aeb97684ddc",
+    "iv": "a0a09fc8cde43a90bc39f95cabd176c3",
+    "nickname": "Karan1",
+    "phone": "917845784578",
+    "intro": "Testing Intro",
+    "gender": "male",
+    "agreement": true,
+    "createdAt": "2025-08-21T14:05:16.183Z",
+    "updatedAt": "2025-08-21T14:05:16.184Z"
+  }
+]

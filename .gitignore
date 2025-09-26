@@ -1,0 +1,55 @@
+# Node modules
+backend/node_modules/
+frontend/node_modules/
+
+# Build output
+backend/dist/
+backend/build/
+frontend/dist/
+frontend/build/
+
+# Logs
+backend/npm-debug.log*
+backend/yarn-debug.log*
+backend/yarn-error.log*
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+
+# OS
+backend/.DS_Store
+backend/Thumbs.db
+frontend/.DS_Store
+frontend/Thumbs.db
+
+# Env files
+backend/.env
+backend/.env.*
+frontend/.env
+frontend/.env.*
+
+# IDE
+backend/.vscode/
+backend/.idea/
+backend/*.suo
+backend/*.ntvs*
+backend/*.njsproj
+backend/*.sln
+frontend/.vscode/
+frontend/.idea/
+frontend/*.suo
+frontend/*.ntvs*
+frontend/*.njsproj
+frontend/*.sln
+
+# Misc
+backend/coverage/
+backend/*.log
+frontend/coverage/
+frontend/*.log
+
+# Ant Design Pro
+backend/config/config.local.js
+backend/config/config.prod.js
+frontend/config/config.local.js
+frontend/config/config.prod.js
