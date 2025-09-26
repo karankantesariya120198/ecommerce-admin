@@ -1,0 +1,12 @@
+[
+  {
+    "id": "d012c645-04db-4412-ace4-54e89cd95bfa",
+    "name": "Subcategory 1",
+    "fileId": "72089330-e3c3-4678-8412-d684467b419c",
+    "categoryId": "b42aabb6-844f-46b9-a057-63555d6baa05",
+    "status": "active",
+    "description": "This is test description",
+    "createdAt": "2025-09-01T12:51:16.178Z",
+    "updatedAt": "2025-09-01T13:52:41.091Z"
+  }
+]

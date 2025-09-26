@@ -1,0 +1,32 @@
+[
+  {
+    "id": "49b348df-f0e2-40f7-a81a-473f4d2eee85",
+    "name": "Product 1",
+    "sku": "PD1",
+    "price": 10,
+    "fileIds": "cfb4ab63-3764-498c-92f9-eae0668773d1",
+    "categoryId": "b42aabb6-844f-46b9-a057-63555d6baa05",
+    "subcategoryId": "d012c645-04db-4412-ace4-54e89cd95bfa",
+    "originalPrice": 10,
+    "stock": 50,
+    "specifications": [
+      {
+        "key": "Specification 1",
+        "value": "1"
+      },
+      {
+        "key": "Specification 2",
+        "value": "2"
+      },
+      {
+        "key": "Specification 3",
+        "value": "3"
+      }
+    ],
+    "description": "Product Description",
+    "featured": true,
+    "status": "published",
+    "createdAt": "2025-09-11T14:11:05.127Z",
+    "updatedAt": "2025-09-11T14:11:05.127Z"
+  }
+]

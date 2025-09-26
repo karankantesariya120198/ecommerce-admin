@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+        <title>Admin Panel</title>
+        <style>
+            html, body {
+                height: 100%;
+                margin: 0;
+                padding: 0;
+                /* overflow: hidden; Removed to allow scrolling */
+            }
+            body {
+                width: 100vw;
+                height: 100vh;
+                min-height: 100vh;
+                background: linear-gradient(135deg, #fdfdfd 0%, #e89281 100%);
+                position: relative;
+            }
+            body::before {
+                content: "";
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: url('/vite.svg') center center no-repeat;
+                background-size: contain;
+                opacity: 0.12;
+                z-index: 0;
+                pointer-events: none;
+            }
+            #root {
+                min-height: 100vh;
+                width: 100vw;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+                z-index: 1;      
+            }
+        </style>
+    </head>
+    <body>
+        <div id="root"></div>
+        <script type="module" src="/src/main.jsx"></script>
+    </body>
+</html>

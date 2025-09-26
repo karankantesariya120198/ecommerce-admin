@@ -1,0 +1,55 @@
+[
+  {
+    "id": "b4a0815a-d47a-4a76-9baf-bcee202d4304",
+    "filename": "f9f48b44-d438-4420-8e8d-556ddab5435a.png",
+    "format": "png",
+    "sizeKB": 7,
+    "location": "C:\\Users\\Karan\\Desktop\\personal\\app\\backend\\src\\assets\\category\\f9f48b44-d438-4420-8e8d-556ddab5435a.png"
+  },
+  {
+    "id": "649c8a3a-7aec-4c86-9c27-a50f7a8f8902",
+    "filename": "9ad6ff8c-b07a-4e85-9146-8beb4cd0610e.png",
+    "format": "png",
+    "sizeKB": 7,
+    "location": "C:\\Users\\Karan\\Desktop\\personal\\app\\backend\\src\\assets\\category\\9ad6ff8c-b07a-4e85-9146-8beb4cd0610e.png",
+    "type": "image"
+  },
+  {
+    "id": "2d37f42d-f7a4-445f-8d4c-dd73efc5656a",
+    "filename": "0b62cf4a-e25a-46e6-b814-86db15edbeb8.png",
+    "format": "png",
+    "sizeKB": 5,
+    "location": "C:\\Users\\Karan\\Desktop\\personal\\app\\backend\\src\\assets\\category\\0b62cf4a-e25a-46e6-b814-86db15edbeb8.png",
+    "type": "image"
+  },
+  {
+    "id": "6e3abc8a-8207-4539-a3a8-743be81f33be",
+    "filename": "80a53a78-1fa3-4466-ba0d-a781d49c90e2.png",
+    "format": "png",
+    "sizeKB": 15,
+    "location": "C:\\Users\\Karan\\Desktop\\personal\\app\\backend\\src\\assets\\category\\80a53a78-1fa3-4466-ba0d-a781d49c90e2.png",
+    "type": "image",
+    "createdAt": "2025-08-27T12:14:54.619Z",
+    "updatedAt": "2025-08-27T12:14:54.619Z"
+  },
+  {
+    "id": "72089330-e3c3-4678-8412-d684467b419c",
+    "filename": "e8c15ede-7e64-49dc-beab-906725e8bb32.png",
+    "format": "png",
+    "sizeKB": 6,
+    "location": "C:\\Users\\Karan\\Desktop\\personal\\app\\backend\\src\\assets\\subcategory\\e8c15ede-7e64-49dc-beab-906725e8bb32.png",
+    "type": "image",
+    "createdAt": "2025-09-01T13:52:41.090Z",
+    "updatedAt": "2025-09-01T13:52:41.091Z"
+  },
+  {
+    "id": "cfb4ab63-3764-498c-92f9-eae0668773d1",
+    "filename": "d43b7976-d561-4304-b4f9-5e7564cefb33.png",
+    "format": "png",
+    "sizeKB": 8,
+    "location": "C:\\Users\\Karan\\Desktop\\personal\\app\\backend\\src\\assets\\product\\d43b7976-d561-4304-b4f9-5e7564cefb33.png",
+    "type": "image",
+    "createdAt": "2025-09-11T14:11:05.126Z",
+    "updatedAt": "2025-09-11T14:11:05.126Z"
+  }
+]
