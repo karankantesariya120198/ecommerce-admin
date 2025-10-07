@@ -51,5 +51,15 @@
     "type": "image",
     "createdAt": "2025-09-11T14:11:05.126Z",
     "updatedAt": "2025-09-11T14:11:05.126Z"
+  },
+  {
+    "id": "b9135479-69b8-427b-b4ea-4c7a30b3580e",
+    "filename": "4c062017-ee27-461e-8247-578dc779a502.png",
+    "format": "png",
+    "sizeKB": 6,
+    "location": "C:\\Users\\Karan\\Desktop\\personal\\app\\backend\\src\\assets\\category\\4c062017-ee27-461e-8247-578dc779a502.png",
+    "type": "image",
+    "createdAt": "2025-10-07T13:33:26.880Z",
+    "updatedAt": "2025-10-07T13:33:26.880Z"
   }
 ]

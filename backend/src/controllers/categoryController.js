@@ -1,12 +1,54 @@
 const { readData, writeData, storeFile, getImageFile, deleteFile } = require('../utils/fileHelper');
 const { v4: uuidv4 } = require('uuid');
+const { sendResponse } = require('../utils/responseHelper');
 
 const categoryFile = 'categories.json';
 
+const validateCategoryData = (data) => {
+    const { name, slug, description, parentId, status, featured, specifications, icon } = data;
+    const errors = {};
+    if (!name || typeof name !== 'string' || !name.trim()) {
+        errors.name = ['Please enter a valid category name.'];
+    }
+
+    if (!slug || typeof slug !== 'string' || !slug.trim()) {
+        errors.slug = ['Please enter a valid category slug.'];
+    }
+
+    if (!description || typeof description !== 'string' || !description.trim()) {
+        errors.description = ['Please enter a valid category description.'];
+    }
+
+    if (parentId && typeof parentId !== 'string') {
+        errors.parentId = ['Parent ID must be a string.'];
+    }
+
+    if (status !== undefined && typeof featured !== 'boolean') {
+        errors.status = ['Please choose a valid status.'];
+    }
+
+    if (featured !== undefined && typeof featured !== 'boolean') {
+        errors.featured = ['Featured must be a boolean.'];
+    }
+
+    if (specifications && !Array.isArray(specifications)) {
+        errors.specifications = ['Specifications must be an array.'];
+    }
+
+    if (!icon[0] || !icon[0].type.startsWith('image/')) {
+        errors.icon = ['Please upload a valid category icon image.'];
+    }
+
+    return errors;
+};
+
 exports.getCategories = (req, res) => {
     try {
-        const categories = readData(categoryFile);
-
+        let categories = readData(categoryFile);
+        categories = categories.filter(cat => {
+            // Check if userId exists and matches the current user's ID
+            return cat.userId ? cat.userId === req.user.id : false;
+        });
         const categoriesWithUrl = categories.map(cat => {
             let image = cat.fileId ? getImageFile(cat.fileId, 'category') : null;
             return {
@@ -14,116 +56,95 @@ exports.getCategories = (req, res) => {
                 file: image
             }
         })
-        res.status(200).json(categoriesWithUrl);
+        return sendResponse(res, 200, true, categoriesWithUrl, 'Categories fetched successfully');
     } catch (error) {
         console.log('Get Category Api:', error.stack);
-        res.status(500).json({ error : 'Internal Server Error. Please try again later!' });
+        return sendResponse(res, 500, false, null, 'Internal Server Error. Please try again later!');
     }
 }
 
 exports.fetchCategory = (req, res) => {
     try {
         const { id } = req.params;
-        if (!id) {
-            throw new Error('Category ID is required');
-        }
+        if (!id) return sendResponse(res, 400, false, null, 'Category ID is required');
 
         const categories = readData(categoryFile);
-        const category = categories.find(cat => cat.id === id);
-        if (!category) {
-            throw new Error('Category not found');
-        }
+        const category = categories.find(cat => cat.id === id && cat.userId === req.user.id);
+
+        if (!category) return sendResponse(res, 404, false, null, 'Category not found');
 
         const categoryWithDetails = {
             ...category,
             file: category.fileId ? getImageFile(category.fileId, 'category') : null
         };
-        res.status(200).json(categoryWithDetails);
+        return sendResponse(res, 200, true, categoryWithDetails, 'Category fetched successfully');
     } catch (error) {
         console.log('Fetch Category Api:', error.stack);
-        res.status(500).json({ error : 'Internal Server Error. Please try again later!' });
+        return sendResponse(res, 500, false, null, 'Internal server error. Please try again later.');
     }
 }
 
 exports.createCategory = (req, res) => {
     try {
-        const { name, quantity, icon } = req.body;
-        if (!icon[0]) {
-            return res.status(400).json({ message: 'Please upload a valid category icon image.' });
+        const errors = validateCategoryData(req.body);
+        if (Object.keys(errors).length > 0) {
+            return sendResponse(res, 400, false, null, 'Validation failed', errors);
         }
+
+        const { name, slug, description, parentId, status, featured, specifications, icon } = req.body;
         const categoryIcon = icon[0];
-
-        // Validate name
-        if (!name || typeof name !== 'string' || !name.trim()) {
-            return res.status(400).json({ message: 'Please enter category name' });
-        }
-
-        // Validate icon (expecting an uploaded image file)
-        if (!categoryIcon || !categoryIcon.type.startsWith('image/')) {
-            return res.status(400).json({ message: 'Please upload a valid category icon image.' });
-        }
-
-        // Validate quantity
-        if (quantity === undefined || typeof quantity !== 'number' || quantity < 0) {
-            return res.status(400).json({ message: 'Quantity is required and must be a non-negative number.' });
-        }
-
         let categories = readData(categoryFile);
     
         // Check for duplicate category name
-        if (categories.some(cat => cat.name.toLowerCase() === name.toLowerCase())) {
-            return res.status(409).json({ message: 'Category name already exists.' });
+        if (categories.some(cat => cat.name.toLowerCase() === name.toLowerCase() && cat.userId === req.user.id)) {
+            return sendResponse(res, 409, false, null, 'Category name already exists');
         }
 
         const fileId = storeFile(categoryIcon, 'category');
         const newCategory = {
             id: uuidv4(),
+            userId: req.user.id,
             name: name.trim(),
+            slug: slug.trim(),
+            description: description.trim(),
+            parentId: parentId || null,
+            status: status || false,
+            featured: featured || false,
+            specifications: Array.isArray(specifications) ? specifications : [],
             fileId: fileId,
-            quantity,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString()
         };
         categories.push(newCategory);
         writeData(categoryFile, categories);
-        res.status(201).json(newCategory);
+        return sendResponse(res, 201, true, newCategory, 'Category created successfully');
     } catch (error) {
         console.error("Create Category Api:", error.stack);
-        res.status(500).json({ error: 'Internal Server Error. Please try again later!' });
+        return sendResponse(res, 500, false, null, 'Internal Server Error. Please try again later!');
     }
 }
 
 exports.updateCategory = (req, res) => {
     try {
-        const { name, quantity, icon } = req.body;
+        const errors = validateCategoryData(req.body);
+        if (Object.keys(errors).length > 0) return sendResponse(res, 400, false, null, 'Validation failed', errors);
+
+        const { name, slug, description, parentId, status, featured, specifications, icon } = req.body;
         const { id } = req.params;
-        if (!id) {
-            return res.status(404).json({ message: 'Category ID is required' });
-        }
-
-        // Validate name
-        if (!name || typeof name !== 'string' || !name.trim()) {
-            return res.status(400).json({ message: 'Please enter category name' });
-        }
-
-        // Validate icon (expecting an uploaded image file)
-        if (!icon || !icon[0].type.startsWith('image/')) {
-            return res.status(400).json({ message: 'Please upload a valid category icon image.' });
-        }
-
-        // Validate quantity
-        if (quantity === undefined || typeof quantity !== 'number' || quantity < 0) {
-            return res.status(400).json({ message: 'Quantity is required and must be a non-negative number.' });
-        }
+        if (!id) return sendResponse(res, 400, false, null, 'Category ID is required');
 
         let categories = readData('categories.json');
         const categoryIndex = categories.findIndex(cat => cat.id === req.params.id);
         if (categoryIndex === -1) return res.status(404).json({ message: 'Category not found' });
 
         // Check for duplicate name (excluding current category)
-        if (categories.some((cat, index) => 
-            index !== categoryIndex && cat.name.toLowerCase() === name.toLowerCase())) {
-            return res.status(409).json({ message: 'Category name already exists' });
+        if (
+            categories.some(
+                (cat, index) => 
+                    index !== categoryIndex && cat.name.toLowerCase() === name.toLowerCase() && cat.userId === req.user.id
+            )
+        ) {
+            return sendResponse(res, 409, false, null, 'Category name already exists');
         }
 
         const existingCategory = categories[categoryIndex];
@@ -154,7 +175,12 @@ exports.updateCategory = (req, res) => {
         const updatedCategory = {
             ...existingCategory,
             name: name.trim(),
-            quantity,
+            slug: slug.trim(),
+            description: description.trim(),
+            parentId: parentId || null,
+            status: status || false,
+            featured: featured || false,
+            specifications: Array.isArray(specifications) ? specifications : [],
             updatedAt: new Date().toISOString(),
             fileId: fileId || existingCategory.fileId // Keep old file if no new one provided
         };
@@ -164,26 +190,21 @@ exports.updateCategory = (req, res) => {
 
         // Get the icon URL for response
         const iconUrl = updatedCategory.fileId ? getImageFile(updatedCategory.fileId, 'category') : null;
-        res.status(200).json({
-            ...updatedCategory,
-            iconUrl
-        });
+        return sendResponse(res, 200, true, { ...updatedCategory, iconUrl }, 'Category updated successfully');
     } catch (error) {
         console.error("Update Category Api:", error.stack);
-        res.status(500).json({ error: 'Internal Server Error. Please try again later!' });
+        return sendResponse(res, 500, false, null, 'Internal Server Error. Please try again later!');
     }
 }
 
 exports.deleteCategory = (req, res) => {
     try {
         const { id } = req.params;
-        if (!id) {
-            return res.status(400).json({ message: 'Category ID is required' });
-        }
+        if (!id) return sendResponse(res, 400, false, null, 'Category ID is required');
 
         let categories = readData(categoryFile);
         const categoryIndex = categories.findIndex(cat => cat.id === id);
-        if (categoryIndex === -1) return res.status(404).json({ message: 'Category not found' });
+        if (categoryIndex === -1) return sendResponse(res, 404, false, null, 'Category not found');
 
         const categoryToDelete = categories[categoryIndex];
 
@@ -199,9 +220,9 @@ exports.deleteCategory = (req, res) => {
         categories.splice(categoryIndex, 1);
         writeData(categoryFile, categories);
 
-        res.status(200).json({ message: 'Category deleted successfully' });
+        return sendResponse(res, 200, true, null, 'Category deleted successfully');
     } catch (error) {
         console.error("Delete Category Api:", error.stack);
-        res.status(500).json({ error: 'Internal Server Error. Please try again later!' });
+        return sendResponse(res, 500, false, null, 'Internal Server Error. Please try again later!');
     }
 }

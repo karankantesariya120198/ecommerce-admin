@@ -16,9 +16,12 @@ const CategoryForm = ({ open, onOk, onCancel, initialValues }) => {
     useEffect(() => {
         const fetchAllCategories = async () => {
             try {
-                const result = await dispatch(fetchCategories());
-                const data = result.payload || result;
-                setCategories(data);
+                let result = await dispatch(fetchCategories());
+                result = result.payload || result;
+                if (result.success === true) {
+                    const data = result.payload || result;
+                    setCategories(data);
+                }
             } catch (error) {
                 console.error("Failed to fetch categories:", error);
             }
@@ -53,34 +56,32 @@ const CategoryForm = ({ open, onOk, onCancel, initialValues }) => {
     const handleOk = async () => {
         try {
             const values = await form.validateFields();
-            if (initialValues) {
-                // Edit category
-                dispatch(updateCategory({ id: initialValues.id, data: values }));
-            } else {
-                // Create category
-                dispatch(addCategory(values));
-                show("success", "Subcategory added successfully.");
-            }
-            form.resetFields();
-            onOk(true);
-        } catch (error) {
-            if (error?.response) {
-                if (error.response.status === 400 && error.response.data?.errors) {
-                    const serverErrors = error.response.data.errors;
-                    const fieldErrors = Object.keys(serverErrors).map(key => ({
+            const isEdit = Boolean(initialValues);
+            const action = isEdit ? 'updateCategory' : 'addCategory';
+            const payload = isEdit ? { id: initialValues.id, data: values } : values;
+            // Dispatch redux action
+            const result = await dispatch(eval(action)(payload));
+            const response = result.payload;
+            if (response.success === false) {
+                if (response.errors && typeof response.errors === 'object') {
+                    const fieldErrors = Object.entries(response.errors).map(([key, val]) => ({
                         name: key,
-                        errors: [serverErrors[key]]
+                        errors: Array.isArray(val) ? val : [val],
                     }));
                     form.setFields(fieldErrors);
-                } else if (error.response.status === 409) {
-                    show("error", error.response.data?.error || "Category name already exists.");
+                } else if (response.errors) {
+                    show("error", response.errors || "Failed to process category.");
                 } else {
-                    // Other known server errors
-                    show("error", error.response.data?.message || "Something went wrong.");
+                    show("error", response.message || "Failed to process category.");
                 }
             } else {
-                console.error("Category operation error:", error?.stack || error);
+                show("success", `Category ${isEdit ? 'updated' : 'added'} successfully.`);
+                form.resetFields();
+                onOk(true);
             }
+        } catch (error) {
+            console.error("Failed to category submit form:", error);
+            show("error", error.message || "Failed to process category.");
         }
     };
 
@@ -168,8 +169,8 @@ const CategoryForm = ({ open, onOk, onCancel, initialValues }) => {
                             placeholder="Select your status"
                             rules={[{ required: true, message: "Please select a status!" }]}
                             options={[
-                                { label: "Active", value: "active" },
-                                { label: "Inactive", value: "inactive" }
+                                { label: "Active", value: true },
+                                { label: "Inactive", value: false }
                             ]}
                         />  
                     </Col>
@@ -178,6 +179,7 @@ const CategoryForm = ({ open, onOk, onCancel, initialValues }) => {
                             <Form.Item
                                 name="featured"
                                 label="Featured"
+                                id="featured-switch"
                                 valuePropName="checked"
                                 style={{ textAlign: 'center' }}
                             >
@@ -191,6 +193,7 @@ const CategoryForm = ({ open, onOk, onCancel, initialValues }) => {
                 <Form.Item
                     name="specifications"
                     label="Category Specifications"
+                    id="specifications"
                 >
                     <Form.List name="specifications">
                         {(fields, { add, remove }) => (
@@ -246,6 +249,7 @@ const CategoryForm = ({ open, onOk, onCancel, initialValues }) => {
 
                 <Form.Item
                     name="icon"
+                    id="category-icon"
                     label="Category Icon"
                     valuePropName="fileList"
                     getValueFromEvent={e => Array.isArray(e) ? e : e && e.fileList}

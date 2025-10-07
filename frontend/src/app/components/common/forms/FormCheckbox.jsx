@@ -4,17 +4,20 @@ const FormCheckbox = ({
     name, 
     rules = [], 
     children, 
+    id,
     ...rest 
 }) => {
+    const inputId = id || `form-checkbox-${name}`;
     return (
         <Form.Item 
             name={name} 
             valuePropName="checked" 
             rules={rules} 
             style={{ marginBottom: 16 }} 
+            htmlFor={inputId}
             {...rest}
         >
-            <Checkbox>
+            <Checkbox id={inputId}>
                 {children}
             </Checkbox>
         </Form.Item>
