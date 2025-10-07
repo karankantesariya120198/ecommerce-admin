@@ -1,22 +1,42 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
-import { Modal, Form, Upload, Button } from "antd";
-import { UploadOutlined, CloseOutlined } from '@ant-design/icons';
-import { FormInput } from "../../components/common/forms/index";
+import { Modal, Form, Upload, Button, Row, Col, Switch, Input } from "antd";
+import { UploadOutlined, PlusOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import { FormButton, FormInput, FormSelect } from "../../components/common/forms/index";
 import { MessageNotification } from "../../components/common/index";
-import { addCategory, updateCategory } from "../../store/slices/index";
+import { addCategory, updateCategory, fetchCategories } from "../../store/slices/index";
 
 const CategoryForm = ({ open, onOk, onCancel, initialValues }) => {
     const [form] = Form.useForm();
     const fileRef = useRef();
     const { contextHolder, show } = MessageNotification();
     const dispatch = useDispatch();
+    const [categories, setCategories] = useState([]);
+
+    useEffect(() => {
+        const fetchAllCategories = async () => {
+            try {
+                const result = await dispatch(fetchCategories());
+                const data = result.payload || result;
+                setCategories(data);
+            } catch (error) {
+                console.error("Failed to fetch categories:", error);
+            }
+        };
+        fetchAllCategories();
+    }, [dispatch]);
 
     // Set initial values for edit (useEffect instead of render)
     useEffect(() => {
         if (open && initialValues) {
             form.setFieldsValue({
                 name: initialValues.name,
+                slug: initialValues.slug,
+                description: initialValues.description,
+                parentId: initialValues.parentId,
+                status: initialValues.status,
+                featured: initialValues.featured,
+                specifications: initialValues.specifications && initialValues.specifications.length > 0 ? initialValues.specifications : [],
                 icon: initialValues.file ? [{
                     uid: initialValues.file.id,
                     thumbUrl: initialValues.file.base64Url,
@@ -24,7 +44,6 @@ const CategoryForm = ({ open, onOk, onCancel, initialValues }) => {
                     size: initialValues.file.sizeKB * 1024, // Convert KB to Bytes
                     type: `${initialValues.file.type}/${initialValues.file.format}`,
                 }] : [],
-                quantity: initialValues.quantity
             });
         } else if (open && !initialValues) {
             form.resetFields();
@@ -72,50 +91,159 @@ const CategoryForm = ({ open, onOk, onCancel, initialValues }) => {
 
     return (
         <Modal
-            open={open}
-            onOk={handleOk}
-            onCancel={handleCancel}
-            width={500}
-            centered
-            footer={null}
-            closable={false}
-            bodyStyle={{ padding: 0, borderRadius: 12, overflow: 'hidden' }}
-        >
-            {/* Custom Header */}
-            <div 
-                style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'space-between', 
-                    padding: '20px 24px 12px 24px', 
-                    borderBottom: '1px solid #f0f0f0', 
-                    background: '#fff', 
-                    borderTopLeftRadius: 12, 
-                    borderTopRightRadius: 12 
-                }}
-            >
-                <div style={{ fontWeight: 600, fontSize: 20 }}>
-                    {initialValues ? "Edit Category" : "Add Category"}
+            title={
+                <div key="header" className="gradient-text-btn" style={{ borderBottom: '1px solid #eee', paddingBottom: 15, fontSize: '20px', fontWeight: 'bold'}}>
+                    <span>{initialValues ? "Edit Category" : "Add Category"}</span>
                 </div>
-                <Button
-                    type="text"
-                    icon={<CloseOutlined style={{ fontSize: 18 }} />}
-                    onClick={handleCancel}
-                    style={{ color: '#999999ff', boxShadow: 'none' }}
-                />
-            </div>
+            }
+            open={open}
+            onCancel={handleCancel}
+            width={700}
+            style={{ top: 80 }}
+            footer={[
+                <div key="footer" style={{ borderTop: '1px solid #eee', paddingTop: 15, display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+                    <FormButton
+                        htmlType="button"
+                        type="primary"
+                        children="Cancel"
+                        onClick={handleCancel}
+                    />
+                    <FormButton
+                        children="Submit"
+                        htmlType="submit"
+                        type="primary"
+                        onClick={handleOk}
+                    />
+                </div>
+            ]}
+            closable={false} // Remove close icon in the header
+        >
             {contextHolder}
             <Form
                 form={form}
                 layout="vertical"
-                style={{ width: "100%", padding: "10px", background: "#fff" }}
+                name="categoryForm"
             >
+                <Row gutter={16}>
+                    <Col span={12}>
+                        <FormInput
+                            name="name"
+                            label="Category Name"
+                            placeholder="Please enter category name"
+                            rules={[{ required: true, message: 'Please enter category name' }]}
+                        />
+                    </Col>
+                    <Col span={12}>
+                        <FormInput
+                            name="slug"
+                            label="Category Slug"
+                            placeholder="Please enter category slug"
+                            rules={[{ required: true, message: 'Please enter category slug' }]}
+                        />
+                    </Col>
+                </Row>
+
                 <FormInput
-                    name="name"
-                    label="Category Name"
-                    placeholder="Please enter category name"
-                    rules={[{ required: true, message: 'Please enter category name' }]}
+                    name="description"
+                    label="Category Description"
+                    type="textarea"
+                    placeholder="Please enter category description"
+                    rules={[{ required: true, message: 'Please enter category description' }]}
                 />
+
+                <Row gutter={16}>
+                    <Col span={12}>
+                        <FormSelect
+                            name="parentId"
+                            label="Parent Category"
+                            placeholder="Please select a parent category"
+                            rules={[{ required: true, message: 'Please select a parent category' }]}
+                            options={categories.filter(cat => !cat.parentId).map(cat => ({ label: cat.name, value: cat.id }))}
+                        />
+                    </Col>
+                    <Col span={6}>
+                        <FormSelect
+                            name="status"
+                            label="Status"
+                            placeholder="Select your status"
+                            rules={[{ required: true, message: "Please select a status!" }]}
+                            options={[
+                                { label: "Active", value: "active" },
+                                { label: "Inactive", value: "inactive" }
+                            ]}
+                        />  
+                    </Col>
+                    <Col span={6}>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                            <Form.Item
+                                name="featured"
+                                label="Featured"
+                                valuePropName="checked"
+                                style={{ textAlign: 'center' }}
+                            >
+                                <Switch />
+                            </Form.Item>
+                        </div>
+                    </Col>
+                </Row>
+
+                {/* Specifications Field */}
+                <Form.Item
+                    name="specifications"
+                    label="Category Specifications"
+                >
+                    <Form.List name="specifications">
+                        {(fields, { add, remove }) => (
+                            <>
+                                {fields.map(({ key, name, ...restField }) => (
+                                    <Row key={key} gutter={8} style={{ marginBottom: 8 }}>
+                                        <Col span={10}>
+                                            <Form.Item
+                                                {...restField}
+                                                name={[name, 'key']}
+                                                rules={[{ required: true, message: 'Missing specification name' }]}
+                                            >
+                                                <Input placeholder="Specification name (e.g., Warranty)" />
+                                            </Form.Item>
+                                        </Col>
+                                        <Col span={12}>
+                                            <Form.Item
+                                                {...restField}
+                                                name={[name, 'value']}
+                                                rules={[{ required: true, message: 'Missing specification value' }]}
+                                            >
+                                                <Input placeholder="Specification value (e.g., 1 year)" />
+                                            </Form.Item>
+                                        </Col>
+                                        <Col span={2}>
+                                            <div style={{ display: 'flex', alignItems: 'center'}}>
+                                                <Button
+                                                    type="text"
+                                                    danger
+                                                    icon={<CloseCircleOutlined />}
+                                                    onClick={() => remove(name)}
+                                                    
+                                                >
+                                                </Button>
+                                            </div>
+                                        </Col>
+                                    </Row>
+                                ))}
+                                <Form.Item>
+                                    <Button
+                                        type="dashed"
+                                        onClick={() => add()}
+                                        block
+                                        icon={<PlusOutlined />}
+                                    >
+                                        Add Specification
+                                    </Button>
+                                </Form.Item>
+                            </>
+                        )}
+                    </Form.List>
+                </Form.Item>
+
                 <Form.Item
                     name="icon"
                     label="Category Icon"
@@ -144,25 +272,6 @@ const CategoryForm = ({ open, onOk, onCancel, initialValues }) => {
                         <Button icon={<UploadOutlined />} style={{ width: "100%", height: 44, textAlign: "left" }}>Click to Upload</Button>
                     </Upload>
                 </Form.Item>
-                <FormInput
-                    name="quantity"
-                    label="Quantity"
-                    type="number"
-                    placeholder="Please enter quantity"
-                    rules={[
-                        { required: true, message: 'Please enter quantity' },
-                        { type: 'number', min: 0, message: 'Quantity must be a non-negative number' }
-                    ]}
-                    style={{ width: "100%" }}
-                />
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
-                    <Button onClick={handleCancel}>
-                        Cancel
-                    </Button>
-                    <Button type="primary" onClick={handleOk} >
-                        {initialValues ? 'Update' : 'Add'}
-                    </Button>
-                </div>
             </Form>
         </Modal>
     );

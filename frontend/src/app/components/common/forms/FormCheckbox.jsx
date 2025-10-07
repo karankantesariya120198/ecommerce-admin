@@ -1,10 +1,5 @@
 import { Form, Checkbox } from 'antd';
 
-const formItemLayout = {
-    labelCol: { span: 8 },
-    wrapperCol: { span: 16 }
-};
-
 const FormCheckbox = ({ 
     name, 
     rules = [], 
@@ -13,7 +8,6 @@ const FormCheckbox = ({
 }) => {
     return (
         <Form.Item 
-            {...formItemLayout}
             name={name} 
             valuePropName="checked" 
             rules={rules} 

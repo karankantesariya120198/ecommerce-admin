@@ -1,10 +1,5 @@
 import { Form, Select } from 'antd';
 
-const formItemLayout = {
-    labelCol: { span: 8 },
-    wrapperCol: { span: 16 }
-};
-
 const FormSelect = ({
     name,
     label,
@@ -15,7 +10,6 @@ const FormSelect = ({
 }) => {
   return (
     <Form.Item
-        {...formItemLayout}
         name={name}
         label={label}
         rules={rules}

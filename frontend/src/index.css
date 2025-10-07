@@ -102,3 +102,15 @@ button:focus-visible {
     margin-bottom: 12px;
   }
 }
+
+.gradient-text-btn {
+  background: #fff; /* or transparent */
+  border-color: #04befe;
+}
+
+.gradient-text-btn span {
+  background: linear-gradient(135deg, #6253e1, #04befe);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}

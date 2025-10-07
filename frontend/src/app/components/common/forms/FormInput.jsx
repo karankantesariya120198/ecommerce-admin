@@ -1,10 +1,5 @@
 import { Form, Input, InputNumber } from 'antd';
 
-const formItemLayout = {
-    labelCol: { span: 8 },
-    wrapperCol: { span: 16 }
-};
-
 const FormInput = ({ 
     name, 
     label,
@@ -30,7 +25,6 @@ const FormInput = ({
 
     return (
         <Form.Item
-            {...formItemLayout}
             name={name}
             label={label}
             rules={rules}
