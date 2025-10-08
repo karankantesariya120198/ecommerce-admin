@@ -1,17 +1,19 @@
 import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { Row, Col, Space, Image, Tooltip, Tag, Popconfirm } from "antd";
-import { EditOutlined, DeleteOutlined, QuestionCircleOutlined } from '@ant-design/icons';
+import { useNavigate } from "react-router-dom";
+import { Row, Col, Space, Image, Tag, Popconfirm, Button, Badge } from "antd";
+import { EditOutlined, DeleteOutlined, EyeOutlined, AppstoreOutlined } from '@ant-design/icons';
 import { FormButton } from "../../components/common/forms/index";
 import { ReusableTable, BreadcrumbItem } from "../../components/common/index";
 import CategoryForm from "../../pages/category/CategoryForm";
-import { fetchCategories, deleteCategory } from "../../store/slices/index";
+import { fetchCategories, deleteCategory } from "../../store/slices/index"; 
 
 const CategoryList = () => {
     const { categories, loading, error } = useSelector(state => state.category);
     const [modalOpen, setModalOpen] = useState(false);
     const [editCategory, setEditCategory] = useState(null);
     const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     useEffect(() => {
         dispatch(fetchCategories());
@@ -20,22 +22,50 @@ const CategoryList = () => {
     // Table columns config
     const columns = [
         {
-            title: 'Category Name',
+            title: 'Category',
             dataIndex: 'name',
+            key: 'name',
+            render: (text, record) => (
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <div style={{ position: 'relative', marginRight: 10 }}>
+                        {record.featured && (
+                            <Badge.Ribbon text="Featured" style={{ top: -10, left: -10, zIndex: 1, background: 'linear-gradient(135deg, #6153e19c, #04c0fe80)' }} />
+                        )}
+                        <Image
+                            width={75}
+                            height={75}
+                            src={record.file ? record.file.base64Url : null}
+                            alt={text}
+                            style={{ objectFit: 'cover', borderRadius: 4 }}
+                        />
+                    </div>
+                    <div>
+                        <div style={{ fontWeight: 500 }}>{text}</div>
+                        <div style={{ color: '#8c8c8c', fontSize: '12px' }}>{record.slug}</div>
+                    </div>
+                </div>
+            ),
             sorter: (a, b) => a.name.localeCompare(b.name),
         },
         {
-            title: 'Quantity',
-            dataIndex: 'quantity',
-            sorter: (a, b) => a.quantity - b.quantity,
+            title: 'Description',
+            dataIndex: 'description',
+            key: 'description',
+            render: (text) => (
+                <div style={{ maxWidth: '200px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {text}
+                </div>
+            ),
+            sorter: (a, b) => a.description.localeCompare(b.description),
         },
         {
-            title: 'Icon',
-            render: (_, record, idx, onAction) => (
-                <Image
-                    src={record.file ? record.file.base64Url : null}
-                    style={{ width: 50, height: 50, objectFit: "cover" }}
-                />
+            title: 'Status',
+            dataIndex: 'status',
+            key: 'status',
+            render: (status) => (
+                <Tag color={status ? 'green' : 'red'}>
+                    {status ? 'Active' : 'Inactive'}
+                </Tag>
             ),
         },
         {
@@ -50,37 +80,47 @@ const CategoryList = () => {
         },
         {
             title: 'Actions',
-            isAction: true,
-            render: (_, record, idx, onAction) => (
-                <Space>
-                    <Tooltip title="Edit">
-                        <Tag
-                            color="geekblue"
-                            icon={<EditOutlined />}
-                            onClick={() => onAction && onAction('edit', record)}
-                            size="small"
-                        >
-                            Edit
-                        </Tag>
-                    </Tooltip>
-                    <Popconfirm
-                        title="Are you sure you want to delete this category?"
-                        onConfirm={() => onAction && onAction('delete', record)}
-                        icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
-                        okText="Yes"
-                        okButtonProps={{ style: { color: '#cf1322', backgroundColor: '#fff1f0', borderColor: '#ffa39e' } }}
-                        cancelText="No"
-                        cancelButtonProps={{ style: { color: '#1d39c4', backgroundColor: '#f0f5ff', borderColor: '#adc6ff' } }}
+            key: 'actions',
+            width: 250,
+            render: (_, record) => (
+                <Space size="middle">
+                    <Button
+                        icon={<EyeOutlined />}
+                        size="small"
+                        onClick={() => handleTableAction('view', record)}
                     >
-                        <Tooltip title="Delete">
-                            <Tag
-                                color="red"
-                                icon={<DeleteOutlined />}
-                                size="small"
-                            >
-                                Delete
-                            </Tag>
-                        </Tooltip>
+                            View
+                    </Button>
+                    {record.parentId && (
+                        <Button 
+                            icon={<AppstoreOutlined />} 
+                            size="small"
+                            onClick={() => handleSubcategories(record.id)}
+                        >
+                            Parent Categories
+                        </Button>
+                    )}
+                    <Button 
+                        icon={<EditOutlined />} 
+                        size="small"
+                        onClick={() => handleTableAction('edit', record)}
+                    >
+                        Edit
+                    </Button>
+                    <Popconfirm
+                        title="Are you sure to delete this category?"
+                        description="This will also delete all subcategories and products under this category."
+                        onConfirm={() => handleTableAction('delete', record)}
+                        okText="Yes"
+                        cancelText="No"
+                    >
+                        <Button 
+                            icon={<DeleteOutlined />} 
+                            size="small" 
+                            danger
+                        >
+                            Delete
+                        </Button>
                     </Popconfirm>
                 </Space>
             ),
@@ -96,6 +136,8 @@ const CategoryList = () => {
             dispatch(deleteCategory(record.id))
                 .then(() => dispatch(fetchCategories()))
                 .catch(err => console.error('Error deleting category:', err));
+        } else if (action === 'view') {
+            navigate(`/categories/${record.id}`);
         }
     };
 

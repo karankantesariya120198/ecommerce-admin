@@ -3,6 +3,8 @@ const { v4: uuidv4 } = require('uuid');
 const { sendResponse } = require('../utils/responseHelper');
 
 const categoryFile = 'categories.json';
+const subcategoryFile = 'subcategories.json';
+const productFile = 'products.json';
 
 const validateCategoryData = (data) => {
     const { name, slug, description, parentId, status, featured, specifications, icon } = data;
@@ -35,7 +37,7 @@ const validateCategoryData = (data) => {
         errors.specifications = ['Specifications must be an array.'];
     }
 
-    if (!icon[0] || !icon[0].type.startsWith('image/')) {
+    if (icon && data.icon[0] && !data.icon[0].type.startsWith('image/')) {
         errors.icon = ['Please upload a valid category icon image.'];
     }
 
@@ -73,14 +75,34 @@ exports.fetchCategory = (req, res) => {
 
         if (!category) return sendResponse(res, 404, false, null, 'Category not found');
 
+        // Fetch associated subcategories
+        const subcategories = readData(subcategoryFile);
+        const associatedSubcategories = subcategories.filter(subcat => subcat.categoryId === id);
+
+        // Fetch associated products
+        const products = readData(productFile);
+        const associatedProducts = products.filter(product => product.categoryId === id);
+
+        // Attach file URLs to category, subcategories, and products
         const categoryWithDetails = {
             ...category,
-            file: category.fileId ? getImageFile(category.fileId, 'category') : null
+            file: category.fileId ? getImageFile(category.fileId, 'category') : null,
+            subcategories: associatedSubcategories.map(subcat => ({
+            ...subcat,
+            file: subcat.fileId ? getImageFile(subcat.fileId, 'subcategory') : null
+            })),
+            products: associatedProducts.map(prod => ({
+            ...prod,
+            files: prod.fileIds
+                ? prod.fileIds.split(',').map(fileId => getImageFile(fileId.trim(), 'product'))
+                : []
+            }))
         };
+        
         return sendResponse(res, 200, true, categoryWithDetails, 'Category fetched successfully');
     } catch (error) {
         console.log('Fetch Category Api:', error.stack);
-        return sendResponse(res, 500, false, null, 'Internal server error. Please try again later.');
+        return sendResponse(res, 500, false, null, error.stack);
     }
 }
 

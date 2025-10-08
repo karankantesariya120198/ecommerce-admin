@@ -114,3 +114,9 @@ button:focus-visible {
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+
+.custom-table .ant-table-thead > tr > th {
+  background-color: #f0f2f5; /* Change header background color */
+  color: #000; /* Change header text color */
+  font-weight: bold; /* Make header text bold */
+}

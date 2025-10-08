@@ -5,6 +5,7 @@ export { default as Profile } from './profile/Profile';
 export { default as Setting } from './settings/Setting';
 export { default as CategoryForm } from './category/CategoryForm';
 export { default as CategoryList } from './category/CategoryList';
+export { default as CategoryDetail } from './category/CategoryDetail';
 export { default as SubcategoryList } from './subcategory/SubcategoryList';
 export { default as SubcategoryForm } from './subcategory/SubcategoryForm';
 export { default as SubcategoryDetail } from './subcategory/SubcategoryDetail';

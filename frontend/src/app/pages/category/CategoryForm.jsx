@@ -158,7 +158,7 @@ const CategoryForm = ({ open, onOk, onCancel, initialValues }) => {
                             name="parentId"
                             label="Parent Category"
                             placeholder="Please select a parent category"
-                            rules={[{ required: true, message: 'Please select a parent category' }]}
+                            rules={[{ message: 'Please select a parent category' }]}
                             options={categories.filter(cat => !cat.parentId).map(cat => ({ label: cat.name, value: cat.id }))}
                         />
                     </Col>
@@ -253,7 +253,7 @@ const CategoryForm = ({ open, onOk, onCancel, initialValues }) => {
                     label="Category Icon"
                     valuePropName="fileList"
                     getValueFromEvent={e => Array.isArray(e) ? e : e && e.fileList}
-                    rules={[{ required: true, message: 'Please upload a category icon' }]}
+                    rules={!initialValues?.icon ? [{ required: true, message: 'Please upload a category icon' }] : []}
                 >
                     <Upload
                         name="icon"

@@ -48,14 +48,15 @@ const ReusableTable = ({
         return col;
     });
 
-    // Filter data by search
+    // Filter data by search (search across all fields if searchKey is not provided)
     const filteredData = useMemo(() => {
-        if (!searchKey || !searchText) return Array.isArray(dataSource) ? dataSource : [];
-        if (!searchKey || !searchText) return dataSource;
+        if (!searchText) return Array.isArray(dataSource) ? dataSource : [];
         return dataSource.filter(item =>
-            String(item[searchKey] || "").toLowerCase().includes(searchText.toLowerCase())
+            Object.keys(item).some(key =>
+                String(item[key] || "").toLowerCase().includes(searchText.toLowerCase())
+            )
         );
-    }, [dataSource, searchKey, searchText]);
+    }, [dataSource, searchText]);
 
     const totalItems = filteredData.length;
     const paginatedData = useMemo(() => {
@@ -68,24 +69,30 @@ const ReusableTable = ({
     return (
         <>
             {(showSearch && searchKey) && (
-                <Row style={{ marginBottom: 12 }}>
-                    <Col span={12} style={{ fontWeight: 500 }}>
-                        Total Items: {totalItems}
-                    </Col>
+                <Row style={{ marginBottom: 12, alignItems: 'center' }}>
                     {showTotal && (
-                        <Col span={12} style={{ textAlign: 'right', fontWeight: 500 }}>
-                            <Input.Search
-                                placeholder={`Search by ${rest.searchPlaceholder ?? searchKey}`}
-                                allowClear
-                                value={searchText}
-                                onChange={e => {
-                                    setSearchText(e.target.value);
-                                    setPagination(p => ({ ...p, current: 1 }));
-                                }}
-                                style={{ width: 240 }}
-                            />
+                        <Col span={12} style={{ fontWeight: 500 }}>
+                            Total Items: {totalItems}
                         </Col>
                     )}
+                    <Col span={showTotal ? 12 : 24} style={{ textAlign: 'right' }}>
+                        <Input.Search
+                            placeholder={`Search by ${rest.searchPlaceholder ?? searchKey}`}
+                            allowClear
+                            value={searchText}
+                            onChange={e => {
+                                setSearchText(e.target.value);
+                                setPagination(p => ({ ...p, current: 1 }));
+                            }}
+                            style={{
+                                width: 240,
+                                fontWeight: 'bold',
+                                borderRadius: 4,
+                                borderColor: '#d9d9d9',
+                                boxShadow: '0 3px 4px rgba(0, 0, 0, 0.1)',
+                            }}
+                        />
+                    </Col>
                 </Row>
             )}
             <Table
@@ -103,6 +110,7 @@ const ReusableTable = ({
                     showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`,
                 }}
                 {...rest}
+                className="custom-table"
             />
         </>
     );
