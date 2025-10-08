@@ -1,26 +1,23 @@
 import { Form, Select } from 'antd';
 
-const formItemLayout = {
-    labelCol: { span: 8 },
-    wrapperCol: { span: 16 }
-};
-
 const FormSelect = ({
     name,
     label,
     placeholder,
     options = [],
     rules = [],
+    id,
     ...props
 }) => {
+  const inputId = id || `form-select-${name}`;
   return (
     <Form.Item
-        {...formItemLayout}
         name={name}
         label={label}
         rules={rules}
+        htmlFor={inputId}
     >
-        <Select placeholder={placeholder} {...props}>
+        <Select id={inputId} placeholder={placeholder} {...props}>
             {options.map(
                 option => (
                     <Select.Option key={option.value} value={option.value}>

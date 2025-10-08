@@ -1,12 +1,5 @@
 [
   {
-    "id": "b4a0815a-d47a-4a76-9baf-bcee202d4304",
-    "filename": "f9f48b44-d438-4420-8e8d-556ddab5435a.png",
-    "format": "png",
-    "sizeKB": 7,
-    "location": "C:\\Users\\Karan\\Desktop\\personal\\app\\backend\\src\\assets\\category\\f9f48b44-d438-4420-8e8d-556ddab5435a.png"
-  },
-  {
     "id": "649c8a3a-7aec-4c86-9c27-a50f7a8f8902",
     "filename": "9ad6ff8c-b07a-4e85-9146-8beb4cd0610e.png",
     "format": "png",
@@ -51,5 +44,25 @@
     "type": "image",
     "createdAt": "2025-09-11T14:11:05.126Z",
     "updatedAt": "2025-09-11T14:11:05.126Z"
+  },
+  {
+    "id": "b9135479-69b8-427b-b4ea-4c7a30b3580e",
+    "filename": "4c062017-ee27-461e-8247-578dc779a502.png",
+    "format": "png",
+    "sizeKB": 6,
+    "location": "C:\\Users\\Karan\\Desktop\\personal\\app\\backend\\src\\assets\\category\\4c062017-ee27-461e-8247-578dc779a502.png",
+    "type": "image",
+    "createdAt": "2025-10-07T13:33:26.880Z",
+    "updatedAt": "2025-10-07T13:33:26.880Z"
+  },
+  {
+    "id": "e263d3bb-d1f9-4a12-88aa-fdf37fe453cb",
+    "filename": "eeaebafe-1169-45d6-b0f1-db40e0312acb.png",
+    "format": "png",
+    "sizeKB": 7,
+    "location": "C:\\Users\\Karan\\Desktop\\personal\\app\\backend\\src\\assets\\category\\eeaebafe-1169-45d6-b0f1-db40e0312acb.png",
+    "type": "image",
+    "createdAt": "2025-10-08T11:22:24.177Z",
+    "updatedAt": "2025-10-08T11:22:24.177Z"
   }
 ]

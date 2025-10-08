@@ -53,3 +53,10 @@ backend/config/config.local.js
 backend/config/config.prod.js
 frontend/config/config.local.js
 frontend/config/config.prod.js
+
+# package-lock.json or yarn.lock
+# Uncomment if you want to ignore lock files
+frontend/package.json
+frontend/package-lock.json
+backend/package.json
+backend/package-lock.json

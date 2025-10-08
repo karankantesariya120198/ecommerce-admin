@@ -65,6 +65,7 @@ const categorySlice = createSlice({
     name: "category",
     initialState: {
         categories: [],
+        categoryDetail: null,
         loading: false,
         error: null,
     },
@@ -77,7 +78,7 @@ const categorySlice = createSlice({
             })
             .addCase(fetchCategories.fulfilled, (state, action) => {
                 state.loading = false;
-                state.categories = action.payload;
+                state.categories = action.payload?.payload || [];
             })
             .addCase(fetchCategories.rejected, (state, action) => {
                 state.loading = false;
@@ -89,9 +90,7 @@ const categorySlice = createSlice({
             })
             .addCase(fetchCategoryById.fulfilled, (state, action) => {
                 state.loading = false;
-                state.categories = state.categories.map((cat) =>
-                    cat.id === action.payload.id ? action.payload : cat
-                );
+                state.categoryDetail = action.payload?.payload || null;
             })
             .addCase(fetchCategoryById.rejected, (state, action) => {
                 state.loading = false;

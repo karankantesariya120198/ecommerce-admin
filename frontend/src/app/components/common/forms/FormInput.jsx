@@ -1,9 +1,5 @@
 import { Form, Input, InputNumber } from 'antd';
 
-const formItemLayout = {
-    labelCol: { span: 8 },
-    wrapperCol: { span: 16 }
-};
 
 const FormInput = ({ 
     name, 
@@ -15,28 +11,31 @@ const FormInput = ({
     addonBefore,
     addonAfter,
     rules = [],
+    id,
     ...rest 
 }) => {
-    let inputElement = <Input placeholder={placeholder} addonBefore={addonBefore} {...rest} />;
+    // Generate a default id if not provided
+    const inputId = id || `form-input-${name}`;
+    let inputElement;
     if (type === "password") {
-        inputElement = <Input.Password placeholder={placeholder} addonBefore={addonBefore} {...rest} />;
+        inputElement = <Input.Password id={inputId} placeholder={placeholder} addonBefore={addonBefore} {...rest} />;
     } else if (type === "textarea") {
-        inputElement = <Input.TextArea placeholder={placeholder} {...rest} />;
+        inputElement = <Input.TextArea id={inputId} placeholder={placeholder} {...rest} />;
     } else if (type === "number") {
-        inputElement = <InputNumber placeholder={placeholder} {...rest} />;
+        inputElement = <InputNumber id={inputId} placeholder={placeholder} {...rest} />;
     } else {
-        inputElement = <Input placeholder={placeholder} addonBefore={addonBefore} {...rest} />;
+        inputElement = <Input id={inputId} placeholder={placeholder} addonBefore={addonBefore} {...rest} />;
     }
 
     return (
         <Form.Item
-            {...formItemLayout}
             name={name}
             label={label}
             rules={rules}
             tooltip={tooltip}
             hasFeedback={hasFeedback}
             style={{ width: "100%" }}
+            htmlFor={inputId}
         >
             {inputElement}
         </Form.Item>

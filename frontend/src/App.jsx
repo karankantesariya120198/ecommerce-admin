@@ -8,6 +8,7 @@ import {
     Profile,
     Setting,
     CategoryList,
+    CategoryDetail,
     SubcategoryList,
     SubcategoryDetail,
     ProductList,
@@ -75,6 +76,7 @@ function App() {
                     >
                         <Route path='dashboard' index element={<Dashboard />} />
                         <Route path='categories' element={<CategoryList />} />
+                        <Route path='categories/:id' element={<CategoryDetail />} />
                         <Route path='subcategories' element={<SubcategoryList />} />
                         <Route path='subcategories/:id' element={<SubcategoryDetail />} />
                         <Route path='products' element={<ProductList />} />
