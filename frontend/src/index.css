@@ -119,4 +119,5 @@ button:focus-visible {
   background-color: #f0f2f5; /* Change header background color */
   color: #000; /* Change header text color */
   font-weight: bold; /* Make header text bold */
+  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.1); /* Add bottom border effect */
 }

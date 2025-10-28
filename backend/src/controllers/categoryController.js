@@ -230,7 +230,7 @@ exports.deleteCategory = (req, res) => {
 
         const categoryToDelete = categories[categoryIndex];
 
-        // Deleted associated file if exists
+        // Delete associated file if exists
         if (categoryToDelete.fileId) {
             const deleteResult = deleteFile(categoryToDelete.fileId, 'category');
             if (!deleteResult.success) {
@@ -241,6 +241,30 @@ exports.deleteCategory = (req, res) => {
         // Remove category from array
         categories.splice(categoryIndex, 1);
         writeData(categoryFile, categories);
+
+        // Delete associated subcategories
+        let subcategories = readData(subcategoryFile);
+        const subcategoriesToDelete = subcategories.filter(subcat => subcat.categoryId === id);
+        subcategoriesToDelete.forEach(subcat => {
+            if (subcat.fileId) {
+            const deleteResult = deleteFile(subcat.fileId, 'subcategory');
+            if (!deleteResult.success) {
+                console.warn('Failed to delete subcategory file:', deleteResult.message);
+            }
+            }
+        });
+        subcategories = subcategories.filter(subcat => subcat.categoryId !== id);
+        writeData(subcategoryFile, subcategories);
+
+        // Unlink associated products
+        let products = readData(productFile);
+        products = products.map(product => {
+            if (product.categoryId === id) {
+            return { ...product, categoryId: null };
+            }
+            return product;
+        });
+        writeData(productFile, products);
 
         return sendResponse(res, 200, true, null, 'Category deleted successfully');
     } catch (error) {

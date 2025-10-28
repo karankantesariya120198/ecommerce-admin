@@ -8,7 +8,10 @@
     "phone": "918866693223",
     "intro": "Testing Intro",
     "gender": "male",
-    "agreement": true
+    "agreement": true,
+    "createdAt": "2025-08-21T14:05:16.183Z",
+    "updatedAt": "2025-08-21T14:05:16.184Z",
+    "deletedAt": null
   },
   {
     "id": "9d5a2161-a207-4fc3-8d26-d7958c475bdf",
@@ -21,6 +24,7 @@
     "gender": "male",
     "agreement": true,
     "createdAt": "2025-08-21T14:05:16.183Z",
-    "updatedAt": "2025-08-21T14:05:16.184Z"
+    "updatedAt": "2025-08-21T14:05:16.184Z",
+    "deletedAt": null
   }
 ]

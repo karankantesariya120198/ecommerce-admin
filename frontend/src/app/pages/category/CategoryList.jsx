@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { Row, Col, Space, Image, Tag, Popconfirm, Button, Badge } from "antd";
+import { Row, Col, Space, Image, Tag, Popconfirm, Button, Badge, Card } from "antd";
 import { EditOutlined, DeleteOutlined, EyeOutlined, AppstoreOutlined } from '@ant-design/icons';
 import { FormButton } from "../../components/common/forms/index";
 import { ReusableTable, BreadcrumbItem } from "../../components/common/index";
@@ -70,12 +70,12 @@ const CategoryList = () => {
         },
         {
             title: 'Created At',
-            render: (_, record) => !record.createdAt ? null : new Date(record.createdAt).toLocaleString(),
+            render: (_, record) => !record.createdAt ? null : new Date(record.createdAt).toLocaleString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }),
             sorter: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
         },
         {
             title: 'Updated At',
-            render: (_, record) => !record.updatedAt ? null : new Date(record.updatedAt).toLocaleString(),
+            render: (_, record) => !record.updatedAt ? null : new Date(record.updatedAt).toLocaleString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }),
             sorter: (a, b) => new Date(a.updatedAt) - new Date(b.updatedAt),
         },
         {
@@ -91,15 +91,6 @@ const CategoryList = () => {
                     >
                             View
                     </Button>
-                    {record.parentId && (
-                        <Button 
-                            icon={<AppstoreOutlined />} 
-                            size="small"
-                            onClick={() => handleSubcategories(record.id)}
-                        >
-                            Parent Categories
-                        </Button>
-                    )}
                     <Button 
                         icon={<EditOutlined />} 
                         size="small"
@@ -157,7 +148,7 @@ const CategoryList = () => {
 
     return (
         <>
-            <Row style={{ marginBlockEnd: "10px" }}>
+            <Row style={{ marginBlockEnd: "20px" }}>
                 <Col span={24}>
                     <BreadcrumbItem
                         items={[
@@ -173,35 +164,43 @@ const CategoryList = () => {
                     />
                 </Col>
             </Row>
-            <Row style={{ marginBlockEnd: "10px" }}>
-                <Col span={12}>
-                    <FormButton type='primary' variant='outlined' onClick={() => { setModalOpen(true); setEditCategory(null); }}>
-                        + Add Category
-                    </FormButton>
-                </Col>
-            </Row>
-            <Row>
-                <Col span={24}>
-                    <ReusableTable
-                        rowKey='id'
-                        loading={loading}
-                        dataSource={categories}
-                        columns={columns}
-                        onAction={handleTableAction}
-                        searchKey="name"
-                        showSearch={true}
-                        showTotal={true}
-                        pageSizeOptions={['5', '10', '20', '50']}
-                        searchPlaceholder="category name"
-                    />
-                </Col>
-            </Row>
-            <CategoryForm
-                open={modalOpen}
-                onOk={handleModalOk}
-                onCancel={handleModalCancel}
-                initialValues={editCategory}
-            />
+            <Card 
+                style={{ 
+                    boxShadow: '0 10px 12px rgba(0,0,0,0.06)',
+                    borderRadius: 16,
+                    background: 'linear-gradient(135deg, #e0eafc24 0%, #cfdef32b 100%)',
+                }}
+            >
+                <Row style={{ marginBlockEnd: "10px" }}>
+                    <Col span={12}>
+                        <FormButton type='primary' variant='outlined' onClick={() => { setModalOpen(true); setEditCategory(null); }}>
+                            + Add Category
+                        </FormButton>
+                    </Col>
+                </Row>
+                <Row>
+                    <Col span={24}>
+                        <ReusableTable
+                            rowKey='id'
+                            loading={loading}
+                            dataSource={categories}
+                            columns={columns}
+                            onAction={handleTableAction}
+                            searchKey="name"
+                            showSearch={true}
+                            showTotal={true}
+                            pageSizeOptions={['5', '10', '20', '50']}
+                            searchPlaceholder="category name"
+                        />
+                    </Col>
+                </Row>
+                <CategoryForm
+                    open={modalOpen}
+                    onOk={handleModalOk}
+                    onCancel={handleModalCancel}
+                    initialValues={editCategory}
+                />
+            </Card>
         </>
     );
 };
