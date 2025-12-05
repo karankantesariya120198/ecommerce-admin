@@ -2,6 +2,7 @@ const { message } = require('antd');
 const fs = require('fs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
+const Files = require('../models/files');
 
 const getFilePath = (filename) => path.join(__dirname, `../data/${filename}`);
 
@@ -18,7 +19,7 @@ const writeData = (filename, data) => {
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
 }
 
-const storeFile = (file, folder) => {
+const storeFile = async (file, folder, moduleName) => {
     // Extract the file extension from Base64
     const matches = file.thumbUrl.match(/^data:(.+);base64,(.+)$/);
     if (!matches || matches.length !== 3) {
@@ -48,36 +49,29 @@ const storeFile = (file, folder) => {
     const iconSizeKB = Math.round(sizeInBytes / 1024);
 
     // Store icon info in a JSON file
-    let filesData = readData('files.json');
-    const fileData = {
-        'id': uuidv4(),
-        'filename': filename,
+    let fileData = {
+        'folder_name': folder,
+        'file_name': filename,
         'format': iconFormat,
         'sizeKB': iconSizeKB,
-        'location': filePath,
         'type': 'image',
-        'createdAt': new Date().toISOString(),
-        'updatedAt': new Date().toISOString()
+        'module': moduleName,
+        'created_at': new Date(),
+        'updated_at': new Date()
     };
-    filesData.push(fileData);
-    writeData('files.json', filesData);
+    fileData = await Files.create(fileData);
     return fileData.id;
 }
 
-const deleteFile = (fileId, folder) => {
-    // Read the files data
-    const filesData = readData('files.json');
+const deleteFile = async (fileId) => {
+    const fileData = await Files.findById(fileId); 
 
-    // Find the file to delete
-    const fileIndex = filesData.findIndex(f => f.id === fileId);
-
-    if (fileIndex === -1) {
+    if (!fileData) {
         return { success: false, message: "File not found in database" };
     }
 
-    const fileInfo = filesData[fileIndex];
-    const folderPath = path.join(__dirname, `../assets/${folder}`);
-    const filePath = path.join(folderPath, fileInfo.filename);
+    const folderPath = path.join(__dirname, `../assets/${fileData.folder_name}`);
+    const filePath = path.join(folderPath, fileData.file_name);
 
     // Check if folder exists
     if (!fs.existsSync(folderPath)) {
@@ -88,22 +82,18 @@ const deleteFile = (fileId, folder) => {
     if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath);
     }
-
-    // Remove from the JSON data
-    filesData.splice(fileIndex, 1);
-    writeData('files.json', filesData);
-
+    // Remove file record from database
+    await Files.hardDelete(fileId);
     return { success: true, message: 'File Deleted Successfully' };
 }
 
-const getImageFile = (fileId, folderName) => {
-    const filesData = readData('files.json');
-    const fileInfo = filesData.find(f => f.id === fileId);
-    if (fileInfo) {
-        const filePath = path.join(__dirname, `../assets/${folderName}`, fileInfo.filename);
+const getImageFile = async (fileId) => {
+    const file = await Files.findById(fileId);
+    if (file) {
+        const filePath = path.join(__dirname, `../assets/${file.folder_name}`, file.file_name);
         const fileBuffer = fs.readFileSync(filePath);
-        const base64 = `data:image/${fileInfo.format};base64,${fileBuffer.toString("base64")}`;
-        return { ...fileInfo, base64Url: base64 };
+        const base64 = `data:image/${file.format};base64,${fileBuffer.toString("base64")}`;
+        return { ...file, base64Url: base64 };
     }
     return null;
 }

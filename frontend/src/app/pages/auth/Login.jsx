@@ -29,81 +29,108 @@ const Login = () => {
         }
     };
 
+    const formItemLayout = {
+        labelCol: {
+            xs: { span: 24 },
+            sm: { span: 8 },
+        },
+        wrapperCol: {
+            xs: { span: 24 },
+            sm: { span: 16 },
+        },
+    };
+
     return (
-        <Card
-            hoverable={true}
+        <Flex
+            justify="center"
+            align="center"
             style={{
-                maxWidth: 400,
-                margin: "auto",
-                padding: "20px",
-                backgroundColor: "rgba(255, 255, 255, 0.6)", // Slightly transparent background
-                boxShadow: "none",
-                border: "none",
+                height: "100vh",
             }}
         >
-            {contextHolder}
-            <Flex justify="center" align="center" style={{ marginBottom: 24 }}>
-                <UserOutlined style={{ fontSize: 48, color: "#1677ff" }} />
-            </Flex>
+            <Card
+                hoverable={true}
+                size="default"
+                style={{
+                    width: "100%",
+                    maxWidth: "500px",
+                    borderRadius: "12px",
+                    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+                    backgroundColor: "rgba(255, 255, 255, 0.6)",
+                }}
+                title={
+                    <Flex justify="center" align="center" style={{ marginBottom: "8px", marginTop: "16px" }}>
+                        <UserOutlined style={{ fontSize: 48, color: "#1677ff" }} />
+                    </Flex>
+                }
+            >
+                {contextHolder}
+                <Form
+                    {...formItemLayout}
+                    form={form}
+                    name="login"
+                    initialValues={{ remember: true }}
+                    onFinish={onFinish}
+                    style={{ maxWidth: 360, margin: "auto" }}
+                    scrollToFirstError
+                >
+                    <FormInput
+                        name="email"
+                        label="E-mail"
+                        placeholder="Email Address"
+                        rules={[
+                            { type: "email", message: "The input is not valid E-mail" },
+                            { required: true, message: "Please input your E-mail" },
+                        ]}
+                    />
 
-            <Form form={form} name="login" initialValues={{ remember: true }} onFinish={onFinish}>
-                <FormInput
-                    name="email"
-                    label="E-mail"
-                    placeholder="Email Address"
-                    // prefix={<UserOutlined />}
-                    rules={[
-                        { type: "email", message: "The input is not valid E-mail!" },
-                        { required: true, message: "Please input your E-mail!" }
-                    ]}
-                />
+                    <FormInput
+                        name="password"
+                        label="Password"
+                        type="password"
+                        placeholder="Password"
+                        rules={[{ required: true, message: "Please input your Password" }]}
+                        hasFeedback
+                    />
+                
+                    <FormCheckbox name="remember">Remember me</FormCheckbox>
 
-                <FormInput
-                    name="password"
-                    label="Password"
-                    type="password"
-                    placeholder="Password"
-                    // prefix={<LockOutlined />}
-                    rules={[{ required: true, message: "Please input your Password!" }]}
-                />
+                    <FormButton htmlType="submit" block={true}>
+                        Log in
+                    </FormButton>
 
-                <FormCheckbox name="remember">Remember me</FormCheckbox>
-
-                <FormButton htmlType="submit" block>
-                    Log in
-                </FormButton>
-
-                <div style={{ textAlign: "center", marginTop: 8 }}>
-                    <a
-                        onClick={(e) => {
-                            e.preventDefault();
-                            navigate('/');
-                        }}
-                        style={{
-                            fontWeight: 500,
-                            color: '#646cff',
-                            textDecoration: 'inherit'
-                        }}
-                    >
-                        Forgot password?
-                    </a>
-                    {" "}|{" "}
-                    <a
-                        style={{
-                            fontWeight: 500,
-                            color: '#646cff',
-                            textDecoration: 'inherit'
-                        }}
-                        onClick={(e) => {
-                            e.preventDefault();
-                            navigate('/signup');
-                        }}
-                    >
-                        Register now!
-                    </a>
-                </div>
-            </Form>
-        </Card>
+                    <div style={{ textAlign: "center", marginTop: "16px" }}>
+                        <a
+                            onClick={(e) => {
+                                e.preventDefault();
+                                navigate('/');
+                            }}
+                            style={{
+                                fontWeight: 500,
+                                color: '#1677ff',
+                                textDecoration: 'inherit',
+                            }}
+                        >
+                            Forgot password
+                        </a>
+                        {" "}|{" "}
+                        <a
+                            style={{
+                                fontWeight: 500,
+                                color: '#1677ff',
+                                textDecoration: 'inherit',
+                            }}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                navigate('/signup');
+                            }}
+                        >
+                            Register now!
+                        </a>
+                    </div>
+                </Form>
+            </Card>
+        </Flex>
     );
 };
 

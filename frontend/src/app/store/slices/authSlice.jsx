@@ -21,6 +21,7 @@ export const signupUser = createAsyncThunk(
             const response = await authService.signup(userData);
             return response;
         } catch (error) {
+            console.log("Signup error in thunk:", error);
             return rejectWithValue(error.response.data);
         }
     }

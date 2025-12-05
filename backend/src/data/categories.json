@@ -1,88 +1,28 @@
 [
   {
-    "id": "b42aabb6-844f-46b9-a057-63555d6baa05",
-    "userId": "9d5a2161-a207-4fc3-8d26-d7958c475bdf",
+    "id": "e34269b0-8a54-4397-b603-df005bf0161f",
+    "userId": 1,
     "name": "Category 1",
     "slug": "category-1",
-    "description": "Category Description 1",
-    "fileId": "e263d3bb-d1f9-4a12-88aa-fdf37fe453cb",
-    "quantity": 10,
-    "status": 1,
-    "featured": true,
-    "createdAt": "2025-08-27T12:14:14.264Z",
-    "updatedAt": "2025-10-08T11:22:24.178Z",
+    "description": "Category Description",
     "parentId": null,
-    "specifications": [
-      {
-        "key": "Test 1",
-        "value": "Value 1"
-      },
-      {
-        "key": "Test 2",
-        "value": "Value 2"
-      }
-    ]
-  },
-  {
-    "id": "95edaaca-84e9-4435-8330-3509add8306b",
-    "userId": "9d5a2161-a207-4fc3-8d26-d7958c475bdf",
-    "name": "Category 2",
-    "slug": "category-2",
-    "description": "Category Description 2",
-    "fileId": "649c8a3a-7aec-4c86-9c27-a50f7a8f8902",
-    "quantity": 20,
-    "status": 1,
-    "featured": true,
-    "createdAt": "2025-08-27T12:14:14.264Z",
-    "updatedAt": "2025-08-27T12:14:54.621Z"
-  },
-  {
-    "id": "6fd818dc-6ff4-4ed4-9d65-cc6de85acd10",
-    "userId": "9d5a2161-a207-4fc3-8d26-d7958c475bdf",
-    "name": "Category 3",
-    "slug": "category-3",
-    "description": "Category Description 3",
-    "fileId": "2d37f42d-f7a4-445f-8d4c-dd73efc5656a",
-    "quantity": 15,
-    "status": 1,
-    "featured": true,
-    "createdAt": "2025-08-27T12:14:14.264Z",
-    "updatedAt": "2025-08-27T12:14:54.621Z"
-  },
-  {
-    "id": "03ac2c03-9122-4f1a-8ff7-b5476495ae20",
-    "userId": "9d5a2161-a207-4fc3-8d26-d7958c475bdf",
-    "name": "Category 4",
-    "slug": "category-4",
-    "description": "Category Description 4",
-    "fileId": "6e3abc8a-8207-4539-a3a8-743be81f33be",
-    "quantity": 15,
-    "status": 1,
-    "featured": true,
-    "createdAt": "2025-08-27T12:14:14.264Z",
-    "updatedAt": "2025-08-27T12:14:54.621Z"
-  },
-  {
-    "id": "3d1b7e94-ddb8-4d9d-85d1-eb33de66feeb",
-    "userId": "9d5a2161-a207-4fc3-8d26-d7958c475bdf",
-    "name": "Category 5",
-    "slug": "category-5",
-    "description": "Category Description 5",
-    "parentId": "b42aabb6-844f-46b9-a057-63555d6baa05",
-    "status": 1,
+    "status": true,
     "featured": true,
     "specifications": [
       {
-        "key": "Test 1",
-        "value": "Value 1"
+        "key": "Specifications 1",
+        "value": "1"
       },
       {
-        "key": "Test 2",
-        "value": "Value 2"
+        "key": "Specifications 2",
+        "value": "2"
+      },
+      {
+        "key": "Specifications 3",
+        "value": "3"
       }
     ],
-    "fileId": "b9135479-69b8-427b-b4ea-4c7a30b3580e",
-    "createdAt": "2025-10-07T13:33:26.881Z",
-    "updatedAt": "2025-10-07T13:33:26.881Z"
+    "createdAt": "2025-12-05T14:10:07.629Z",
+    "updatedAt": "2025-12-05T14:10:07.629Z"
   }
 ]

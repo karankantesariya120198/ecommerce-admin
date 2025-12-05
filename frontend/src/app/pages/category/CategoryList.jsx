@@ -70,13 +70,13 @@ const CategoryList = () => {
         },
         {
             title: 'Created At',
-            render: (_, record) => !record.createdAt ? null : new Date(record.createdAt).toLocaleString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }),
-            sorter: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
+            render: (_, record) => !record.created_at ? null : new Date(record.created_at).toLocaleString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }),
+            sorter: (a, b) => new Date(a.created_at) - new Date(b.created_at),
         },
         {
             title: 'Updated At',
-            render: (_, record) => !record.updatedAt ? null : new Date(record.updatedAt).toLocaleString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }),
-            sorter: (a, b) => new Date(a.updatedAt) - new Date(b.updatedAt),
+            render: (_, record) => !record.updated_at ? null : new Date(record.updated_at).toLocaleString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }),
+            sorter: (a, b) => new Date(a.updated_at) - new Date(b.updated_at),
         },
         {
             title: 'Actions',
@@ -137,6 +137,7 @@ const CategoryList = () => {
         if (success) {
             setModalOpen(false);
             setEditCategory(null);
+            dispatch(fetchCategories());
         }
     };
 
@@ -158,7 +159,7 @@ const CategoryList = () => {
                             },
                             {
                                 title: 'Category',
-                                path: '/category'
+                                path: '/categories'
                             }
                         ]}
                     />
@@ -199,6 +200,7 @@ const CategoryList = () => {
                     onOk={handleModalOk}
                     onCancel={handleModalCancel}
                     initialValues={editCategory}
+                    data={categories}
                 />
             </Card>
         </>

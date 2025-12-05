@@ -6,28 +6,13 @@ import { FormButton, FormInput, FormSelect } from "../../components/common/forms
 import { MessageNotification } from "../../components/common/index";
 import { addCategory, updateCategory, fetchCategories } from "../../store/slices/index";
 
-const CategoryForm = ({ open, onOk, onCancel, initialValues }) => {
+const CategoryForm = ({ open, onOk, onCancel, initialValues, data }) => {
+    console.log("CategoryForm initialValues:", data);
     const [form] = Form.useForm();
     const fileRef = useRef();
     const { contextHolder, show } = MessageNotification();
     const dispatch = useDispatch();
-    const [categories, setCategories] = useState([]);
-
-    useEffect(() => {
-        const fetchAllCategories = async () => {
-            try {
-                let result = await dispatch(fetchCategories());
-                result = result.payload || result;
-                if (result.success === true) {
-                    const data = result.payload || result;
-                    setCategories(data);
-                }
-            } catch (error) {
-                console.error("Failed to fetch categories:", error);
-            }
-        };
-        fetchAllCategories();
-    }, [dispatch]);
+    const categories = data || [];
 
     // Set initial values for edit (useEffect instead of render)
     useEffect(() => {
@@ -38,7 +23,7 @@ const CategoryForm = ({ open, onOk, onCancel, initialValues }) => {
                 description: initialValues.description,
                 parentId: initialValues.parentId,
                 status: initialValues.status,
-                featured: initialValues.featured,
+                featured: initialValues.featured ? true : false,
                 specifications: initialValues.specifications && initialValues.specifications.length > 0 ? initialValues.specifications : [],
                 icon: initialValues.file ? [{
                     uid: initialValues.file.id,
@@ -169,8 +154,8 @@ const CategoryForm = ({ open, onOk, onCancel, initialValues }) => {
                             placeholder="Select your status"
                             rules={[{ required: true, message: "Please select a status!" }]}
                             options={[
-                                { label: "Active", value: true },
-                                { label: "Inactive", value: false }
+                                { label: "Active", value: 1 },
+                                { label: "Inactive", value: 0 }
                             ]}
                         />  
                     </Col>

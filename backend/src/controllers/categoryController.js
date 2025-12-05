@@ -1,6 +1,8 @@
 const { readData, writeData, storeFile, getImageFile, deleteFile } = require('../utils/fileHelper');
 const { v4: uuidv4 } = require('uuid');
 const { sendResponse } = require('../utils/responseHelper');
+const Categories = require('../models/categories');
+const Files = require('../models/files');
 
 const categoryFile = 'categories.json';
 const subcategoryFile = 'subcategories.json';
@@ -25,8 +27,8 @@ const validateCategoryData = (data) => {
         errors.parentId = ['Parent ID must be a string.'];
     }
 
-    if (status !== undefined && typeof featured !== 'boolean') {
-        errors.status = ['Please choose a valid status.'];
+    if (status !== undefined && ![0, 1].includes(status)) {
+        errors.status = ['Please choose a valid status (0 or 1).'];
     }
 
     if (featured !== undefined && typeof featured !== 'boolean') {
@@ -44,20 +46,20 @@ const validateCategoryData = (data) => {
     return errors;
 };
 
-exports.getCategories = (req, res) => {
+exports.getCategories = async (req, res) => {
     try {
-        let categories = readData(categoryFile);
-        categories = categories.filter(cat => {
-            // Check if userId exists and matches the current user's ID
-            return cat.userId ? cat.userId === req.user.id : false;
-        });
-        const categoriesWithUrl = categories.map(cat => {
-            let image = cat.fileId ? getImageFile(cat.fileId, 'category') : null;
+        if (!req.user || !req.user.id) {
+            return sendResponse(res, 401, false, null, 'Unauthorized access. Please log in.');
+        }
+
+        let categories = await Categories.findAll(req.user.id);
+        const categoriesWithUrl = await Promise.all(categories.map(async cat => {
+            let image = cat.fileId ? await getImageFile(cat.fileId) : null;
             return {
                 ...cat,
                 file: image
-            }
-        })
+            };
+        }));
         return sendResponse(res, 200, true, categoriesWithUrl, 'Categories fetched successfully');
     } catch (error) {
         console.log('Get Category Api:', error.stack);
@@ -65,38 +67,36 @@ exports.getCategories = (req, res) => {
     }
 }
 
-exports.fetchCategory = (req, res) => {
+exports.fetchCategory = async (req, res) => {
     try {
         const { id } = req.params;
         if (!id) return sendResponse(res, 400, false, null, 'Category ID is required');
 
-        const categories = readData(categoryFile);
-        const category = categories.find(cat => cat.id === id && cat.userId === req.user.id);
-
+        const category = await Categories.findById(id);
         if (!category) return sendResponse(res, 404, false, null, 'Category not found');
 
         // Fetch associated subcategories
-        const subcategories = readData(subcategoryFile);
-        const associatedSubcategories = subcategories.filter(subcat => subcat.categoryId === id);
+        // const subcategories = readData(subcategoryFile);
+        // const associatedSubcategories = subcategories.filter(subcat => subcat.categoryId === id);
 
         // Fetch associated products
-        const products = readData(productFile);
-        const associatedProducts = products.filter(product => product.categoryId === id);
+        // const products = readData(productFile);
+        // const associatedProducts = products.filter(product => product.categoryId === id);
 
         // Attach file URLs to category, subcategories, and products
         const categoryWithDetails = {
             ...category,
-            file: category.fileId ? getImageFile(category.fileId, 'category') : null,
-            subcategories: associatedSubcategories.map(subcat => ({
-            ...subcat,
-            file: subcat.fileId ? getImageFile(subcat.fileId, 'subcategory') : null
-            })),
-            products: associatedProducts.map(prod => ({
-            ...prod,
-            files: prod.fileIds
-                ? prod.fileIds.split(',').map(fileId => getImageFile(fileId.trim(), 'product'))
-                : []
-            }))
+            file: category.fileId ? getImageFile(category.fileId) : null,
+            // subcategories: associatedSubcategories.map(subcat => ({
+            // ...subcat,
+            // file: subcat.fileId ? getImageFile(subcat.fileId, 'subcategory') : null
+            // })),
+            // products: associatedProducts.map(prod => ({
+            // ...prod,
+            // files: prod.fileIds
+            //     ? prod.fileIds.split(',').map(fileId => getImageFile(fileId.trim(), 'product'))
+            //     : []
+            // }))
         };
         
         return sendResponse(res, 200, true, categoryWithDetails, 'Category fetched successfully');
@@ -106,7 +106,7 @@ exports.fetchCategory = (req, res) => {
     }
 }
 
-exports.createCategory = (req, res) => {
+exports.createCategory = async (req, res) => {
     try {
         const errors = validateCategoryData(req.body);
         if (Object.keys(errors).length > 0) {
@@ -115,30 +115,28 @@ exports.createCategory = (req, res) => {
 
         const { name, slug, description, parentId, status, featured, specifications, icon } = req.body;
         const categoryIcon = icon[0];
-        let categories = readData(categoryFile);
+        let categories = await Categories.findAll(req.user.id);
     
         // Check for duplicate category name
         if (categories.some(cat => cat.name.toLowerCase() === name.toLowerCase() && cat.userId === req.user.id)) {
             return sendResponse(res, 409, false, null, 'Category name already exists');
         }
 
-        const fileId = storeFile(categoryIcon, 'category');
-        const newCategory = {
-            id: uuidv4(),
-            userId: req.user.id,
-            name: name.trim(),
-            slug: slug.trim(),
-            description: description.trim(),
-            parentId: parentId || null,
-            status: status || false,
-            featured: featured || false,
-            specifications: Array.isArray(specifications) ? specifications : [],
-            fileId: fileId,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
+        let fileId = await storeFile(categoryIcon, 'category', 'category');
+        let newCategory = {
+            "userId": req.user.id,
+            "name": name.trim(),
+            "slug": slug.trim(),
+            "description": description,
+            "parentId": parentId || null,
+            "status": status || false,
+            "featured": featured || false,
+            "specifications": JSON.stringify(Array.isArray(specifications) ? specifications : []),
+            "fileId": fileId,
+            "created_at": new Date(),
+            "updated_at": new Date()
         };
-        categories.push(newCategory);
-        writeData(categoryFile, categories);
+        newCategory = await Categories.create(newCategory);
         return sendResponse(res, 201, true, newCategory, 'Category created successfully');
     } catch (error) {
         console.error("Create Category Api:", error.stack);
@@ -146,7 +144,7 @@ exports.createCategory = (req, res) => {
     }
 }
 
-exports.updateCategory = (req, res) => {
+exports.updateCategory = async (req, res) => {
     try {
         const errors = validateCategoryData(req.body);
         if (Object.keys(errors).length > 0) return sendResponse(res, 400, false, null, 'Validation failed', errors);
@@ -155,23 +153,21 @@ exports.updateCategory = (req, res) => {
         const { id } = req.params;
         if (!id) return sendResponse(res, 400, false, null, 'Category ID is required');
 
-        let categories = readData('categories.json');
-        const categoryIndex = categories.findIndex(cat => cat.id === req.params.id);
-        if (categoryIndex === -1) return res.status(404).json({ message: 'Category not found' });
+        let category = await Categories.findById(req.params.id);
+        if (!category) return res.status(404).json({ message: 'Category not found' });
 
+        let categories = await Categories.findAll(req.user.id);
         // Check for duplicate name (excluding current category)
+
         if (
             categories.some(
-                (cat, index) => 
-                    index !== categoryIndex && cat.name.toLowerCase() === name.toLowerCase() && cat.userId === req.user.id
+                (cat) => (String(cat.id) !== String(id) && cat.name.toLowerCase() === name.toLowerCase() && cat.userId === req.user.id)
             )
         ) {
             return sendResponse(res, 409, false, null, 'Category name already exists');
         }
 
-        const existingCategory = categories[categoryIndex];
-        let fileId = existingCategory.fileId;
-
+        let fileId = category.fileId;
         // Handle icon update if provided
         if (icon && icon[0]) {
             const categoryIcon = icon[0];
@@ -183,35 +179,32 @@ exports.updateCategory = (req, res) => {
 
             // Delete old file if exists
             if (fileId) {
-                const deleteResult = deleteFile(fileId, 'category');
+                const deleteResult = await deleteFile(fileId);
                 if (!deleteResult.success) {
                     console.warn('Failed to delete old file:', deleteResult.message);
                 }
             }
 
             // Store new file
-            fileId = storeFile(categoryIcon, 'category');
+            fileId = await storeFile(categoryIcon, 'category', 'category');
         }
 
         // Update category
-        const updatedCategory = {
-            ...existingCategory,
+        let updatedCategory = {
+            ...category,
             name: name.trim(),
             slug: slug.trim(),
             description: description.trim(),
             parentId: parentId || null,
             status: status || false,
             featured: featured || false,
-            specifications: Array.isArray(specifications) ? specifications : [],
-            updatedAt: new Date().toISOString(),
-            fileId: fileId || existingCategory.fileId // Keep old file if no new one provided
+            specifications: JSON.stringify(Array.isArray(specifications) ? specifications : []),
+            updated_at: new Date(),
+            fileId: fileId || category.fileId // Keep old file if no new one provided
         };
-
-        categories[categoryIndex] = updatedCategory;
-        writeData(categoryFile, categories);
-
+        updatedCategory = await Categories.update(id, updatedCategory);
         // Get the icon URL for response
-        const iconUrl = updatedCategory.fileId ? getImageFile(updatedCategory.fileId, 'category') : null;
+        const iconUrl = updatedCategory.fileId ? await getImageFile(updatedCategory.fileId) : null;
         return sendResponse(res, 200, true, { ...updatedCategory, iconUrl }, 'Category updated successfully');
     } catch (error) {
         console.error("Update Category Api:", error.stack);
