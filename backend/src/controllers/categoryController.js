@@ -1,5 +1,4 @@
 const { readData, writeData, storeFile, getImageFile, deleteFile } = require('../utils/fileHelper');
-const { v4: uuidv4 } = require('uuid');
 const { sendResponse } = require('../utils/responseHelper');
 const Categories = require('../models/categories');
 const Files = require('../models/files');
@@ -54,7 +53,7 @@ exports.getCategories = async (req, res) => {
 
         let categories = await Categories.findAll(req.user.id);
         const categoriesWithUrl = await Promise.all(categories.map(async cat => {
-            let image = cat.fileId ? await getImageFile(cat.fileId) : null;
+            let image = cat.file_id ? await getImageFile(cat.file_id) : null;
             return {
                 ...cat,
                 file: image
@@ -86,15 +85,15 @@ exports.fetchCategory = async (req, res) => {
         // Attach file URLs to category, subcategories, and products
         const categoryWithDetails = {
             ...category,
-            file: category.fileId ? getImageFile(category.fileId) : null,
+            file: category.file_id ? await getImageFile(category.file_id) : null,
             // subcategories: associatedSubcategories.map(subcat => ({
             // ...subcat,
-            // file: subcat.fileId ? getImageFile(subcat.fileId, 'subcategory') : null
+            // file: subcat.file_id ? getImageFile(subcat.file_id, 'subcategory') : null
             // })),
             // products: associatedProducts.map(prod => ({
             // ...prod,
-            // files: prod.fileIds
-            //     ? prod.fileIds.split(',').map(fileId => getImageFile(fileId.trim(), 'product'))
+            // files: prod.file_ids
+            //     ? prod.file_ids.split(',').map(fileId => getImageFile(fileId.trim(), 'product'))
             //     : []
             // }))
         };
@@ -113,26 +112,26 @@ exports.createCategory = async (req, res) => {
             return sendResponse(res, 400, false, null, 'Validation failed', errors);
         }
 
-        const { name, slug, description, parentId, status, featured, specifications, icon } = req.body;
+        const { name, slug, description, parent_id, status, featured, specifications, icon } = req.body;
         const categoryIcon = icon[0];
         let categories = await Categories.findAll(req.user.id);
     
         // Check for duplicate category name
-        if (categories.some(cat => cat.name.toLowerCase() === name.toLowerCase() && cat.userId === req.user.id)) {
+        if (categories.some(cat => cat.name.toLowerCase() === name.toLowerCase() && cat.user_id === req.user.id)) {
             return sendResponse(res, 409, false, null, 'Category name already exists');
         }
 
         let fileId = await storeFile(categoryIcon, 'category', 'category');
         let newCategory = {
-            "userId": req.user.id,
+            "user_id": req.user.id,
             "name": name.trim(),
             "slug": slug.trim(),
             "description": description,
-            "parentId": parentId || null,
+            "parent_id": parent_id || null,
             "status": status || false,
             "featured": featured || false,
             "specifications": JSON.stringify(Array.isArray(specifications) ? specifications : []),
-            "fileId": fileId,
+            "file_id": fileId,
             "created_at": new Date(),
             "updated_at": new Date()
         };
@@ -149,7 +148,7 @@ exports.updateCategory = async (req, res) => {
         const errors = validateCategoryData(req.body);
         if (Object.keys(errors).length > 0) return sendResponse(res, 400, false, null, 'Validation failed', errors);
 
-        const { name, slug, description, parentId, status, featured, specifications, icon } = req.body;
+        const { name, slug, description, parent_id, status, featured, specifications, icon } = req.body;
         const { id } = req.params;
         if (!id) return sendResponse(res, 400, false, null, 'Category ID is required');
 
@@ -161,13 +160,13 @@ exports.updateCategory = async (req, res) => {
 
         if (
             categories.some(
-                (cat) => (String(cat.id) !== String(id) && cat.name.toLowerCase() === name.toLowerCase() && cat.userId === req.user.id)
+                (cat) => (String(cat.id) !== String(id) && cat.name.toLowerCase() === name.toLowerCase() && cat.user_id === req.user.id)
             )
         ) {
             return sendResponse(res, 409, false, null, 'Category name already exists');
         }
 
-        let fileId = category.fileId;
+        let fileId = category.file_id;
         // Handle icon update if provided
         if (icon && icon[0]) {
             const categoryIcon = icon[0];
@@ -195,16 +194,16 @@ exports.updateCategory = async (req, res) => {
             name: name.trim(),
             slug: slug.trim(),
             description: description.trim(),
-            parentId: parentId || null,
+            parent_id: parent_id || null,
             status: status || false,
             featured: featured || false,
             specifications: JSON.stringify(Array.isArray(specifications) ? specifications : []),
             updated_at: new Date(),
-            fileId: fileId || category.fileId // Keep old file if no new one provided
+            file_id: fileId || category.file_id // Keep old file if no new one provided
         };
         updatedCategory = await Categories.update(id, updatedCategory);
         // Get the icon URL for response
-        const iconUrl = updatedCategory.fileId ? await getImageFile(updatedCategory.fileId) : null;
+        const iconUrl = updatedCategory.file_id ? await getImageFile(updatedCategory.file_id) : null;
         return sendResponse(res, 200, true, { ...updatedCategory, iconUrl }, 'Category updated successfully');
     } catch (error) {
         console.error("Update Category Api:", error.stack);
@@ -212,52 +211,48 @@ exports.updateCategory = async (req, res) => {
     }
 }
 
-exports.deleteCategory = (req, res) => {
+exports.deleteCategory =  async (req, res) => {
     try {
         const { id } = req.params;
         if (!id) return sendResponse(res, 400, false, null, 'Category ID is required');
 
-        let categories = readData(categoryFile);
-        const categoryIndex = categories.findIndex(cat => cat.id === id);
-        if (categoryIndex === -1) return sendResponse(res, 404, false, null, 'Category not found');
-
-        const categoryToDelete = categories[categoryIndex];
+        let category = await Categories.findById(id);
+        if (!category) return sendResponse(res, 404, false, null, 'Category not found');
 
         // Delete associated file if exists
-        if (categoryToDelete.fileId) {
-            const deleteResult = deleteFile(categoryToDelete.fileId, 'category');
+        if (category.file_id) {
+            const deleteResult = await deleteFile(category.file_id);
             if (!deleteResult.success) {
                 console.warn('Failed to delete category file:', deleteResult.message);
             }
         }
 
         // Remove category from array
-        categories.splice(categoryIndex, 1);
-        writeData(categoryFile, categories);
+        await Categories.softDelete(id);
 
         // Delete associated subcategories
-        let subcategories = readData(subcategoryFile);
-        const subcategoriesToDelete = subcategories.filter(subcat => subcat.categoryId === id);
-        subcategoriesToDelete.forEach(subcat => {
-            if (subcat.fileId) {
-            const deleteResult = deleteFile(subcat.fileId, 'subcategory');
-            if (!deleteResult.success) {
-                console.warn('Failed to delete subcategory file:', deleteResult.message);
-            }
-            }
-        });
-        subcategories = subcategories.filter(subcat => subcat.categoryId !== id);
-        writeData(subcategoryFile, subcategories);
+        // let subcategories = readData(subcategoryFile);
+        // const subcategoriesToDelete = subcategories.filter(subcat => subcat.category_id === id);
+        // subcategoriesToDelete.forEach(subcat => {
+        //     if (subcat.file_id) {
+        //     const deleteResult = deleteFile(subcat.file_id, 'subcategory');
+        //     if (!deleteResult.success) {
+        //         console.warn('Failed to delete subcategory file:', deleteResult.message);
+        //     }
+        //     }
+        // });
+        // subcategories = subcategories.filter(subcat => subcat.category_id !== id);
+        // writeData(subcategoryFile, subcategories);
 
         // Unlink associated products
-        let products = readData(productFile);
-        products = products.map(product => {
-            if (product.categoryId === id) {
-            return { ...product, categoryId: null };
-            }
-            return product;
-        });
-        writeData(productFile, products);
+        // let products = readData(productFile);
+        // products = products.map(product => {
+        //     if (product.categoryId === id) {
+        //     return { ...product, categoryId: null };
+        //     }
+        //     return product;
+        // });
+        // writeData(productFile, products);
 
         return sendResponse(res, 200, true, null, 'Category deleted successfully');
     } catch (error) {

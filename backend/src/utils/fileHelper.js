@@ -3,6 +3,56 @@ const fs = require('fs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const Files = require('../models/files');
+const Cloudinary = require('./cloudinary');
+
+/**
+ * Upload a file to Cloudinary in a specific folder and store metadata
+ * @param {object} file - { thumbUrl: base64 string, ... }
+ * @param {string} folder - Cloudinary folder name
+ * @param {string} moduleName - Module name for metadata
+ * @returns {Promise<object>} - File metadata from DB
+ */
+const storeFileCloudinary = async (file, folder, moduleName) => {
+    const matches = file.thumbUrl.match(/^data:(.+);base64,(.+)$/);
+    if (!matches || matches.length !== 3) {
+        throw new Error('Invalid Base64 format');
+    }
+    const mimeType = matches[1];
+    const imageData = matches[2];
+    const ext = mimeType.split('/')[1];
+    const filename = `${uuidv4()}.${ext}`;
+    // Upload to Cloudinary
+    const uploadRes = await Cloudinary.upload(file.thumbUrl, { folder });
+    // Store metadata in DB
+    let fileData = {
+        folder_name: folder,
+        file_name: filename,
+        format: ext,
+        sizeKB: Math.round(uploadRes.bytes / 1024),
+        type: uploadRes.resource_type,
+        module: moduleName,
+        public_id: uploadRes.public_id,
+        url: uploadRes.secure_url,
+        created_at: new Date(),
+        updated_at: new Date()
+    };
+    fileData = await Files.create(fileData);
+    return fileData.id;
+};
+
+/**
+ * Get Cloudinary file URL and metadata by fileId
+ * @param {number} fileId
+ * @returns {Promise<object|null>}
+ */
+const getCloudinaryFile = async (fileId) => {
+    const file = await Files.findById(fileId);
+    if (file && file.public_id) {
+        const url = Cloudinary.getUrl(file.public_id);
+        return { ...file, cloudinaryUrl: url };
+    }
+    return null;
+};
 
 const getFilePath = (filename) => path.join(__dirname, `../data/${filename}`);
 
@@ -83,7 +133,7 @@ const deleteFile = async (fileId) => {
         fs.unlinkSync(filePath);
     }
     // Remove file record from database
-    await Files.hardDelete(fileId);
+    await Files.softDelete(fileId);
     return { success: true, message: 'File Deleted Successfully' };
 }
 
@@ -98,4 +148,4 @@ const getImageFile = async (fileId) => {
     return null;
 }
 
-module.exports = { readData, writeData, storeFile, deleteFile, getImageFile };
+module.exports = { readData, writeData, storeFile, deleteFile, getImageFile, storeFileCloudinary, getCloudinaryFile };

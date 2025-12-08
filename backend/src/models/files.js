@@ -28,7 +28,7 @@ class Files {
 
     static async softDelete(id) {
         try {
-            const deletedAt = new Date().toISOString();
+            const deletedAt = new Date();
             await knex(this.tableName)
                 .where({ id, deleted_at: null })
                 .update({ deleted_at: deletedAt });

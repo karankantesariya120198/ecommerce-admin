@@ -1,13 +1,12 @@
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { Modal, Form, Upload, Button, Row, Col, Switch, Input } from "antd";
 import { UploadOutlined, PlusOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import { FormButton, FormInput, FormSelect } from "../../components/common/forms/index";
 import { MessageNotification } from "../../components/common/index";
-import { addCategory, updateCategory, fetchCategories } from "../../store/slices/index";
+import { addCategory, updateCategory, deleteCategory } from "../../store/slices/categorySlice";
 
 const CategoryForm = ({ open, onOk, onCancel, initialValues, data }) => {
-    console.log("CategoryForm initialValues:", data);
     const [form] = Form.useForm();
     const fileRef = useRef();
     const { contextHolder, show } = MessageNotification();
@@ -21,7 +20,7 @@ const CategoryForm = ({ open, onOk, onCancel, initialValues, data }) => {
                 name: initialValues.name,
                 slug: initialValues.slug,
                 description: initialValues.description,
-                parentId: initialValues.parentId,
+                parent_id: initialValues.parent_id ?? null,
                 status: initialValues.status,
                 featured: initialValues.featured ? true : false,
                 specifications: initialValues.specifications && initialValues.specifications.length > 0 ? initialValues.specifications : [],
@@ -140,11 +139,10 @@ const CategoryForm = ({ open, onOk, onCancel, initialValues, data }) => {
                 <Row gutter={16}>
                     <Col span={12}>
                         <FormSelect
-                            name="parentId"
+                            name="parent_id"
                             label="Parent Category"
                             placeholder="Please select a parent category"
-                            rules={[{ message: 'Please select a parent category' }]}
-                            options={categories.filter(cat => !cat.parentId).map(cat => ({ label: cat.name, value: cat.id }))}
+                            options={categories.filter(cat => !cat.parent_id).map(cat => ({ label: cat.name, value: cat.id }))}
                         />
                     </Col>
                     <Col span={6}>

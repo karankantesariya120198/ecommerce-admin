@@ -40,7 +40,7 @@ class Categories {
 
     static async softDelete(id) {
         try {
-            const deletedAt = new Date().toISOString();
+            const deletedAt = new Date();
             await knex(this.tableName)
                 .where({ id, deleted_at: null })
                 .update({ deleted_at: deletedAt });
@@ -64,7 +64,7 @@ class Categories {
     static async findAll(userId, limit = 100, offset = 0) {
         try {
             const categories = await knex(this.tableName)
-                .where({ deleted_at: null, userId: userId })
+                .where({ deleted_at: null, user_id: userId })
                 .select('*')
                 .limit(limit)
                 .offset(offset)
