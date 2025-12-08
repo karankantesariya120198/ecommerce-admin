@@ -205,7 +205,7 @@ const CategoryDetail = () => {
                                     {category.status == true ? 'ACTIVE' : 'INACTIVE'}
                                 </Tag>
                                 {category.featured && <Tag color="gold" style={{ fontWeight: 600, fontSize: 14 }}>FEATURED</Tag>}
-                                {!category.parentId && <Tag color="blue" style={{ fontWeight: 600, fontSize: 14 }}>MAIN CATEGORY</Tag>}
+                                {!category.parent_id && <Tag color="blue" style={{ fontWeight: 600, fontSize: 14 }}>MAIN CATEGORY</Tag>}
                             </div>
                             <p style={{ fontSize: 16, color: '#444', marginBottom: 18 }}>{category.description}</p>
                             <Divider style={{ margin: '18px 0' }} />
@@ -219,7 +219,7 @@ const CategoryDetail = () => {
                                 <Col span={8}>
                                     <Statistic 
                                         title={<span style={{ color: '#888', fontWeight: 500 }}>Created</span>}
-                                        value={new Date(category.createdAt).toLocaleDateString('en-US', {
+                                        value={new Date(category.created_at).toLocaleDateString('en-US', {
                                             month: 'short',
                                             day: '2-digit',
                                             year: 'numeric'

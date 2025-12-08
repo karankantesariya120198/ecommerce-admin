@@ -26,8 +26,8 @@
 
 <h3>Backend</h3>
 <ul>
-  <li>Node.js / Express</li>
-  <li>MongoDB + Mongoose (or your DB)</li>
+  <li>Node.js / Express / Knex JS</li>
+  <li>SQL (or your DB)</li>
   <li>JWT Authentication</li>
   <li>CORS, Dotenv</li>
 </ul>
@@ -77,5 +77,5 @@ JWT_SECRET=your_secret_key
   Please open an issue to discuss changes before submitting a PR.
 </p>
 
-<h2>📜 License</h2>
-<p>This project is licensed under the <b>MIT License</b>.</p>
+<!-- <h2>📜 License</h2>
+<p>This project is licensed under the <b>MIT License</b>.</p> -->

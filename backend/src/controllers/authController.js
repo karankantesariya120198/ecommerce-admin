@@ -3,8 +3,9 @@ const path = require('path');
 const { encrypt, decrypt } = require('../services/cryptoService');
 const jwt = require('jsonwebtoken');
 const { jwt: jwtConfig, refreshToken } = require('../config/config');
-const { readData, writeData } = require('../utils/fileHelper'); // Assuming you have a utility to read files
+const { readData } = require('../utils/fileHelper'); // Assuming you have a utility to read files
 const { v4: uuidv4 } = require('uuid');
+const User = require('../models/users');
 
 const USERS_FILE = 'users.json'; // Assuming you have a User model defined 
 const JWT_EXPIRATION = '1h'; // Token expiration time
@@ -79,25 +80,25 @@ exports.generateTokens = (user) => {
 // Controller for user signup
 exports.signup = async (req, res) => {
     try {
-        const { email, password, confirm, nickname, phone, intro, gender, agreement, prefix } = req.body;
+        const { email, password, nickname, phone, intro, gender, agreement, prefix } = req.body;
 
         const errors = validateSignup(req.body);
         if (Object.keys(errors).length > 0) {
             return res.status(400).json({ errors });
         }
 
-        const users = readData(USERS_FILE) || [];
-        if (users.length > 0) {
-            // Check if email is already registered
-            const existingUser = users.find(user => user.email === email);
-            if (existingUser) {
-                return res.status(409).json({ error: 'User already exists. Please try a different email.' });
-            }
+        // Check if email is already registered
+        const existingUser = await User.findByEmail(email);
+        if (existingUser) {
+            let errors = {};
+            errors.email = 'User already exists. Please try a different email.';
+            return res.status(409).json({ errors });
         }
 
-        const { encryptedData, iv } = encrypt(password);
-        users.push({
-            id: uuidv4(),
+        // Here I want decode password first then encrypt and store
+        const decodedPassword = decodeURIComponent(password);
+        const { encryptedData, iv } = encrypt(decodedPassword);
+        const user = await User.create({
             email: email,
             password: encryptedData,
             iv: iv,
@@ -106,15 +107,13 @@ exports.signup = async (req, res) => {
             intro: intro,
             gender: gender,
             agreement: agreement,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()  
+            created_at: new Date(),
+            updated_at: new Date()
         });
 
-        // Save user data to USERS_FILE
-        writeData(USERS_FILE, users);
         res.status(201).json({ 
             message: 'User registered successfully',
-            user: users[users.length - 1] // Return the newly created user 
+            user: await User.findById(user.id),
         });
     } catch (error) {
         console.error("Signup error:", error.stack);
@@ -131,8 +130,7 @@ exports.login = async (req, res) => {
             return res.status(400).json({ errors });
         }
     
-        let users = readData(USERS_FILE) || [];
-        const user = users.find(user => user.email === email);
+        const user = await User.findByEmail(email);
         if (!user) {
             return res.status(409).json({ error: 'No users found. Please register first.' });
         }

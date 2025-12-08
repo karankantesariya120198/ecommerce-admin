@@ -1,33 +1,17 @@
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { Modal, Form, Upload, Button, Row, Col, Switch, Input } from "antd";
 import { UploadOutlined, PlusOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import { FormButton, FormInput, FormSelect } from "../../components/common/forms/index";
 import { MessageNotification } from "../../components/common/index";
-import { addCategory, updateCategory, fetchCategories } from "../../store/slices/index";
+import { addCategory, updateCategory, deleteCategory } from "../../store/slices/categorySlice";
 
-const CategoryForm = ({ open, onOk, onCancel, initialValues }) => {
+const CategoryForm = ({ open, onOk, onCancel, initialValues, data }) => {
     const [form] = Form.useForm();
     const fileRef = useRef();
     const { contextHolder, show } = MessageNotification();
     const dispatch = useDispatch();
-    const [categories, setCategories] = useState([]);
-
-    useEffect(() => {
-        const fetchAllCategories = async () => {
-            try {
-                let result = await dispatch(fetchCategories());
-                result = result.payload || result;
-                if (result.success === true) {
-                    const data = result.payload || result;
-                    setCategories(data);
-                }
-            } catch (error) {
-                console.error("Failed to fetch categories:", error);
-            }
-        };
-        fetchAllCategories();
-    }, [dispatch]);
+    const categories = data || [];
 
     // Set initial values for edit (useEffect instead of render)
     useEffect(() => {
@@ -36,9 +20,9 @@ const CategoryForm = ({ open, onOk, onCancel, initialValues }) => {
                 name: initialValues.name,
                 slug: initialValues.slug,
                 description: initialValues.description,
-                parentId: initialValues.parentId,
+                parent_id: initialValues.parent_id ?? null,
                 status: initialValues.status,
-                featured: initialValues.featured,
+                featured: initialValues.featured ? true : false,
                 specifications: initialValues.specifications && initialValues.specifications.length > 0 ? initialValues.specifications : [],
                 icon: initialValues.file ? [{
                     uid: initialValues.file.id,
@@ -155,11 +139,10 @@ const CategoryForm = ({ open, onOk, onCancel, initialValues }) => {
                 <Row gutter={16}>
                     <Col span={12}>
                         <FormSelect
-                            name="parentId"
+                            name="parent_id"
                             label="Parent Category"
                             placeholder="Please select a parent category"
-                            rules={[{ message: 'Please select a parent category' }]}
-                            options={categories.filter(cat => !cat.parentId).map(cat => ({ label: cat.name, value: cat.id }))}
+                            options={categories.filter(cat => !cat.parent_id).map(cat => ({ label: cat.name, value: cat.id }))}
                         />
                     </Col>
                     <Col span={6}>
@@ -169,8 +152,8 @@ const CategoryForm = ({ open, onOk, onCancel, initialValues }) => {
                             placeholder="Select your status"
                             rules={[{ required: true, message: "Please select a status!" }]}
                             options={[
-                                { label: "Active", value: true },
-                                { label: "Inactive", value: false }
+                                { label: "Active", value: 1 },
+                                { label: "Inactive", value: 0 }
                             ]}
                         />  
                     </Col>

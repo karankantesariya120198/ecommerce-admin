@@ -4,6 +4,24 @@ const helmet = require('helmet'); // Added for security headers
 const morgan = require('morgan'); // Added for request logging
 const rateLimit = require('express-rate-limit'); // Added for rate limiting
 const app = express();
+const knex = require('./db/knex');
+
+app.get('/health', async (req, res) => {
+    try {
+        await knex.raw('SELECT 1');
+        res.json({ 
+            status: 'OK',
+            database: 'Connected',
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        res.status(500).json({ 
+            status: 'Error', 
+            database: 'Disconnected',
+            error: error.message 
+        });
+    }
+});
 
 // Security middleware
 app.use(helmet());
