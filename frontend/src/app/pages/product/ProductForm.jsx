@@ -1,7 +1,7 @@
 import { useRef, useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { Col, Form, Row, Modal, Upload, Button, Input } from "antd";
-import { FormCheckbox, FormInput, FormSelect } from "../../components/common/forms";
+import { FormButton, FormCheckbox, FormInput, FormSelect } from "../../components/common/forms";
 import { MessageNotification } from "../../components/common";
 import { addProduct, updateProduct } from "../../store/slices/index";
 import { fetchCategories, fetchSubcategories } from "../../store/slices/index";
@@ -139,18 +139,39 @@ const ProductForm = ({ open, onOk, onCancel, initialValues }) => {
 
     return (
         <Modal
-            title={initialValues ? "Edit Product" : "Add Product"}
+            title = {
+                <div key="header" className="gradient-text-btn" style={{ borderBottom: '1px solid #eee', paddingBottom: 15, fontSize: '20px', fontWeight: 'bold'}}>
+                    <span>{initialValues ? "Edit Product" : "Add Product"}</span>
+                </div>
+            }
             open={open}
             onOk={handleOk}
             onCancel={handleCancel}
-            width={800}
-            centered
+            width={700}
+            style={{ top: 80 }}
+            footer={[
+                <div key="footer" style={{ borderTop: '1px solid #eee', paddingTop: 15, display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+                    <FormButton
+                        htmlType="button"
+                        type="danger"
+                        children="Cancel"
+                        onClick={handleCancel}
+                    />
+                    <FormButton
+                        children="Submit"
+                        htmlType="submit"
+                        type="primary"
+                        onClick={handleOk}
+                    />
+                </div>
+            ]}
+            closable={false} // Remove close icon in the header
         >
             {contextHolder}
             <Form
                 form={form}
                 layout="vertical"
-                style={{ width: "100%" }}
+                name="productForm"
             >
                 <Row gutter={16}>
                     <Col span={12}>
@@ -218,28 +239,49 @@ const ProductForm = ({ open, onOk, onCancel, initialValues }) => {
                             onChange={handleCategoryChange}
                         />
                     </Col>
-                    {selectedCategory && (
-                        <Col span={12}>
-                            <FormSelect
-                                name="subcategoryId"
-                                label="Subcategory"
-                                placeholder="Select subcategory"
-                                rules={[{ required: true, message: 'Please select a subcategory' }]}
-                                options={subcategoryOptions}
-                            />
-                        </Col>
-                    )}
+                    <Col span={12}>
+                        <FormSelect
+                            name="subcategoryId"
+                            label="Subcategory"
+                            placeholder="Select subcategory"
+                            rules={selectedCategory ? [{ required: true, message: 'Please select a subcategory' }] : []}
+                            options={selectedCategory ? subcategoryOptions : []}
+                        />
+                    </Col>
                 </Row>
-
-                <FormInput
-                    name="description"
-                    label="Product Description"
-                    type="textarea"
-                    placeholder="Please enter product description"
-                    rules={[{ required: true, message: 'Please enter product description' }]}
-                    style={{ width: "100%" }}
-                    inputProps={{ style: { width: "100%" } }}
-                />
+                
+                <Row gutter={16}>
+                    <Col span={12}>
+                        <FormInput
+                            name="description"
+                            label="Product Description"
+                            type="textarea"
+                            placeholder="Please enter product description"
+                            rules={[{ required: true, message: 'Please enter product description' }]}
+                            style={{ width: "100%" }}
+                            inputProps={{ style: { width: "100%" } }}
+                        />
+                    </Col>
+                    <Col span={6}>
+                        <FormSelect
+                            name="status"
+                            label="Status"
+                            placeholder="Select status"
+                            rules={[{ required: true, message: 'Please select status' }]}
+                            options={[
+                                { value: "published", label: "Published" },
+                                { value: "draft", label: "Draft" },
+                            ]}
+                        />
+                    </Col>
+                    <Col span={6}>
+                        <FormCheckbox
+                            name="featured"
+                            label="Featured"
+                            valuePropName="checked"
+                        />
+                    </Col>
+                </Row>
 
                 <Form.Item
                     name="icons"
@@ -316,28 +358,6 @@ const ProductForm = ({ open, onOk, onCancel, initialValues }) => {
                         )}
                     </Form.List>
                 </Form.Item>
-
-                <Row gutter={16}>
-                    <Col span={12}>
-                        <FormSelect
-                            name="status"
-                            label="Status"
-                            placeholder="Select status"
-                            rules={[{ required: true, message: 'Please select status' }]}
-                            options={[
-                                { value: "published", label: "Published" },
-                                { value: "draft", label: "Draft" },
-                            ]}
-                        />
-                    </Col>
-                    <Col span={12}>
-                       <FormCheckbox
-                           name="featured"
-                           label="Featured"
-                           valuePropName="checked"
-                       />
-                    </Col>
-                </Row>
             </Form>
         </Modal>
     );

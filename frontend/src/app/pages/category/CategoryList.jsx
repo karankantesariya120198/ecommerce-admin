@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { Row, Col, Space, Image, Tag, Popconfirm, Button, Badge, Card } from "antd";
-import { EditOutlined, DeleteOutlined, EyeOutlined, AppstoreOutlined } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, EyeOutlined, AppstoreOutlined, PlusOutlined } from '@ant-design/icons';
 import { FormButton } from "../../components/common/forms/index";
 import { ReusableTable, BreadcrumbItem } from "../../components/common/index";
 import CategoryForm from "../../pages/category/CategoryForm";
@@ -36,12 +36,12 @@ const CategoryList = () => {
                             height={75}
                             src={record.file ? record.file.base64Url : null}
                             alt={text}
-                            style={{ objectFit: 'cover', borderRadius: 4 }}
+                            style={{ objectFit: 'cover', borderRadius: 10, pointerEvents: 'cursor', backgroundColor: '#f0f0f0' }}
                         />
                     </div>
                     <div>
                         <div style={{ fontWeight: 500 }}>{text}</div>
-                        <div style={{ color: '#8c8c8c', fontSize: '12px' }}>{record.slug}</div>
+                        <div style={{ color: '#8c8c8c', fontSize: '12px', pointerEvents: 'cursor' }}>{record.slug}</div>
                     </div>
                 </div>
             ),
@@ -169,14 +169,24 @@ const CategoryList = () => {
                 style={{ 
                     boxShadow: '0 10px 12px rgba(0,0,0,0.06)',
                     borderRadius: 16,
-                    background: 'linear-gradient(135deg, #e0eafc24 0%, #cfdef32b 100%)',
                 }}
             >
-                <Row style={{ marginBlockEnd: "10px" }}>
+                <Row style={{ marginBlockEnd: "20px" }}>
                     <Col span={12}>
-                        <FormButton type='primary' variant='outlined' onClick={() => { setModalOpen(true); setEditCategory(null); }}>
-                            + Add Category
-                        </FormButton>
+                        <h2 style={{ margin: 0 }}>Categories</h2>
+                        <p style={{ margin: 0, color: '#8c8c8c' }}>Manage your categories</p>
+                    </Col>
+                    <Col span={12} style={{ textAlign: 'right', alignItems: 'center', display: 'flex', justifyContent: 'flex-end' }}>
+                        <Space>
+                            <FormButton
+                                type='primary'
+                                variant='outlined'
+                                icon={<PlusOutlined />}
+                                onClick={() => { setModalOpen(true); setEditCategory(null); }}
+                            >
+                                Add Category
+                            </FormButton>
+                        </Space>
                     </Col>
                 </Row>
                 <Row>

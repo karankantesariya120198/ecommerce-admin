@@ -89,7 +89,7 @@ const CategoryForm = ({ open, onOk, onCancel, initialValues, data }) => {
                 <div key="footer" style={{ borderTop: '1px solid #eee', paddingTop: 15, display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
                     <FormButton
                         htmlType="button"
-                        type="primary"
+                        type="danger"
                         children="Cancel"
                         onClick={handleCancel}
                     />
@@ -113,27 +113,27 @@ const CategoryForm = ({ open, onOk, onCancel, initialValues, data }) => {
                     <Col span={12}>
                         <FormInput
                             name="name"
-                            label="Category Name"
-                            placeholder="Please enter category name"
-                            rules={[{ required: true, message: 'Please enter category name' }]}
+                            label="Name"
+                            placeholder="Please enter name"
+                            rules={[{ required: true, message: 'Please enter name' }]}
                         />
                     </Col>
                     <Col span={12}>
                         <FormInput
                             name="slug"
-                            label="Category Slug"
+                            label="Slug"
                             placeholder="Please enter category slug"
-                            rules={[{ required: true, message: 'Please enter category slug' }]}
+                            rules={[{ required: true, message: 'Please enter slug' }]}
                         />
                     </Col>
                 </Row>
 
                 <FormInput
                     name="description"
-                    label="Category Description"
+                    label="Description"
                     type="textarea"
                     placeholder="Please enter category description"
-                    rules={[{ required: true, message: 'Please enter category description' }]}
+                    rules={[{ required: true, message: 'Please enter description' }]}
                 />
 
                 <Row gutter={16}>

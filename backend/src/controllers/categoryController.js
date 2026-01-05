@@ -3,10 +3,6 @@ const { sendResponse } = require('../utils/responseHelper');
 const Categories = require('../models/categories');
 const Files = require('../models/files');
 
-const categoryFile = 'categories.json';
-const subcategoryFile = 'subcategories.json';
-const productFile = 'products.json';
-
 const validateCategoryData = (data) => {
     const { name, slug, description, parentId, status, featured, specifications, icon } = data;
     const errors = {};
@@ -75,8 +71,8 @@ exports.fetchCategory = async (req, res) => {
         if (!category) return sendResponse(res, 404, false, null, 'Category not found');
 
         // Fetch associated subcategories
-        // const subcategories = readData(subcategoryFile);
-        // const associatedSubcategories = subcategories.filter(subcat => subcat.categoryId === id);
+        const subcategories = readData(subcategoryFile);
+        const associatedSubcategories = subcategories.filter(subcat => subcat.categoryId === id);
 
         // Fetch associated products
         // const products = readData(productFile);

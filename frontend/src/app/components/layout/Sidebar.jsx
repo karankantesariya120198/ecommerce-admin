@@ -3,7 +3,9 @@ import {
     DashboardOutlined, 
     UserOutlined, 
     SettingOutlined,
-    AppstoreOutlined
+    AppstoreOutlined,
+    ShoppingOutlined,
+    ShoppingCartOutlined
 } from '@ant-design/icons';
 import { useLocation } from 'react-router-dom';
 
@@ -14,7 +16,8 @@ const Sidebar = ({ onMenuClick }) => {
         { key: '/dashboard', icon: <DashboardOutlined />, label: 'Dashboard' },
         { key: '/categories', icon: <AppstoreOutlined />, label: 'Category' },
         { key: '/subcategories', icon: <AppstoreOutlined />, label: 'Subcategory' },
-        { key: '/products', icon: <AppstoreOutlined />, label: 'Products' },
+        { key: '/products', icon: <ShoppingOutlined />, label: 'Products' },
+        { key: '/orders', icon: <ShoppingCartOutlined />, label: 'Orders' },
         { key: '/profile', icon: <UserOutlined />, label: 'Profile' },
         { key: '/settings', icon: <SettingOutlined />, label: 'Settings' },
     ];

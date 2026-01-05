@@ -1,8 +1,8 @@
 import { useRef, useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
-import { Col, Form, Modal, Row, Upload, Button } from "antd";
-import { UploadOutlined } from '@ant-design/icons';
-import { FormInput, FormSelect } from "../../components/common/forms";
+import { Col, Form, Modal, Row, Upload, Button, Switch, Input } from "antd";
+import { CloseCircleOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
+import { FormButton, FormInput, FormSelect } from "../../components/common/forms";
 import { MessageNotification } from "../../components/common";
 import { addSubcategory, updateSubcategory, fetchCategories } from "../../store/slices/index";
 
@@ -19,8 +19,9 @@ const SubcategoryForm = ({ open, onOk, onCancel, initialValues }) => {
             dispatch(fetchCategories())
                 .unwrap()
                 .then(data => {
-                    if (Array.isArray(data)) {
-                        setCategoryOptions(data.map(cat => ({ label: cat.name, value: cat.id })));
+                    let result = data.payload;
+                    if (Array.isArray(result) && result.length > 0) {
+                        setCategoryOptions(result.map(cat => ({ label: cat.name, value: cat.id })));
                     }
                 })
                 .catch(() => setCategoryOptions([]));
@@ -32,6 +33,9 @@ const SubcategoryForm = ({ open, onOk, onCancel, initialValues }) => {
         if (open && initialValues) {
             form.setFieldsValue({
                 name: initialValues.name,
+                slug: initialValues.slug,
+                specifications: initialValues.specifications && initialValues.specifications.length > 0 ? initialValues.specifications : [],
+                featured: initialValues.featured ? true : false,
                 icon: initialValues.file ? [{
                     uid: initialValues.file.id,
                     thumbUrl: initialValues.file.base64Url,
@@ -39,7 +43,7 @@ const SubcategoryForm = ({ open, onOk, onCancel, initialValues }) => {
                     size: initialValues.file.sizeKB * 1024, // Convert KB to Bytes
                     type: `${initialValues.file.type}/${initialValues.file.format}`,
                 }] : [],
-                categoryId: initialValues.categoryId,
+                category_id: initialValues.category_id,
                 status: initialValues.status,
                 description: initialValues.description,
             });
@@ -89,21 +93,42 @@ const SubcategoryForm = ({ open, onOk, onCancel, initialValues }) => {
 
     return (
         <Modal
-            title={initialValues ? "Edit Subcategory" : "Add Subcategory"}
+            title= {
+                <div key="header" className="gradient-text-btn" style={{ borderBottom: '1px solid #eee', paddingBottom: 15, fontSize: '20px', fontWeight: 'bold'}}>
+                    <span>{initialValues ? "Edit Subcategory" : "Add Subcategory"}</span>
+                </div>
+            }
             open={open}
             onOk={handleOk}
             onCancel={handleCancel}
-            width={500}
-            centered
+            width={700}
+            style={{ top: 80 }}
+            footer={[
+                <div key="footer" style={{ borderTop: '1px solid #eee', paddingTop: 15, display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+                    <FormButton
+                        htmlType="button"
+                        type="danger"
+                        children="Cancel"
+                        onClick={handleCancel}
+                    />
+                    <FormButton
+                        htmlType="submit"
+                        type="primary"
+                        children="Submit"
+                        onClick={handleOk}
+                    />
+                </div>
+            ]}
+            closable={false} // Remove close icon in the header
         >
             {contextHolder}
             <Form
                 form={form}
                 layout="vertical"
-                style={{ width: "100%" }}
+                name="subcategoryForm"
             >
-                <Row>
-                    <Col span={24}>
+                <Row gutter={16}>
+                    <Col span={12}>
                         <FormInput
                             name="name"
                             label="Subcategory Name"
@@ -112,6 +137,120 @@ const SubcategoryForm = ({ open, onOk, onCancel, initialValues }) => {
                             style={{ width: "100%" }}
                         />
                     </Col>
+                    <Col span={12}>
+                        <FormInput
+                            name="slug"
+                            label="Subcategory Slug"
+                            placeholder="Please enter subcategory slug"
+                            rules={[{ required: true, message: 'Please enter subcategory slug' }]}
+                        />
+                    </Col>
+                </Row>
+
+                <FormInput
+                    name="description"
+                    label="Subcategory Description"
+                    type="textarea"
+                    placeholder="Please enter subcategory description"
+                    rules={[{ required: true, message: 'Please enter subcategory description' }]}
+                />
+
+                <Row gutter={16}>
+                    <Col span={12}>
+                        <FormSelect
+                            name="category_id"
+                            label="Category"
+                            placeholder="Select your category"
+                            rules={[{ required: true, message: "Please select a category!" }]}
+                            options={categoryOptions}
+                        />
+                    </Col>
+                    <Col span={6}>
+                        <FormSelect
+                            name="status"
+                            label="Status"
+                            placeholder="Select your status"
+                            rules={[{ required: true, message: "Please select a status!" }]}
+                            options={[
+                                { label: "Active", value: 1 },
+                                { label: "Inactive", value: 0 }
+                            ]}
+                        />  
+                    </Col>
+                    <Col span={6}>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                            <Form.Item
+                                name="featured"
+                                label="Featured"
+                                id="featured-switch"
+                                valuePropName="checked"
+                                style={{ textAlign: 'center' }}
+                            >
+                                <Switch />
+                            </Form.Item>
+                        </div>
+                    </Col>
+                </Row>
+
+                {/* Specifications Field */}
+                <Form.Item
+                    name="specifications"
+                    label="Category Specifications"
+                    id="specifications"
+                >
+                    <Form.List name="specifications">
+                        {(fields, { add, remove }) => (
+                            <>
+                                {fields.map(({ key, name, ...restField }) => (
+                                    <Row key={key} gutter={8} style={{ marginBottom: 8 }}>
+                                        <Col span={10}>
+                                            <Form.Item
+                                                {...restField}
+                                                name={[name, 'key']}
+                                                rules={[{ required: true, message: 'Missing specification name' }]}
+                                            >
+                                                <Input placeholder="Specification name (e.g., Warranty)" />
+                                            </Form.Item>
+                                        </Col>
+                                        <Col span={12}>
+                                            <Form.Item
+                                                {...restField}
+                                                name={[name, 'value']}
+                                                rules={[{ required: true, message: 'Missing specification value' }]}
+                                            >
+                                                <Input placeholder="Specification value (e.g., 1 year)" />
+                                            </Form.Item>
+                                        </Col>
+                                        <Col span={2}>
+                                            <div style={{ display: 'flex', alignItems: 'center'}}>
+                                                <Button
+                                                    type="text"
+                                                    danger
+                                                    icon={<CloseCircleOutlined />}
+                                                    onClick={() => remove(name)}
+                                                    
+                                                >
+                                                </Button>
+                                            </div>
+                                        </Col>
+                                    </Row>
+                                ))}
+                                <Form.Item>
+                                    <Button
+                                        type="dashed"
+                                        onClick={() => add()}
+                                        block
+                                        icon={<PlusOutlined />}
+                                    >
+                                        Add Specification
+                                    </Button>
+                                </Form.Item>
+                            </>
+                        )}
+                    </Form.List>
+                </Form.Item>
+
+                <Row gutter={16}>
                     <Col span={24}>
                         <Form.Item
                             name="icon"
@@ -134,37 +273,6 @@ const SubcategoryForm = ({ open, onOk, onCancel, initialValues }) => {
                                 <Button icon={<UploadOutlined />} style={{ width: "100%", textAlign: "left" }}>Click to Upload</Button>
                             </Upload>
                         </Form.Item>
-                    </Col>
-                    <Col span={24}>
-                        <FormSelect
-                            name="categoryId"
-                            label="Category"
-                            placeholder="Select your category"
-                            rules={[{ required: true, message: "Please select a category!" }]}
-                            options={categoryOptions}
-                        />
-                    </Col>
-                    <Col span={24}>
-                        <FormSelect
-                            name="status"
-                            label="Status"
-                            placeholder="Select your status"
-                            rules={[{ required: true, message: "Please select a status!" }]}
-                            options={[
-                                { label: "Active", value: "active" },
-                                { label: "Inactive", value: "inactive" }
-                            ]}
-                        />
-                    </Col>
-                    <Col span={24}>
-                        <FormInput
-                            name="description"
-                            label="Description"
-                            type="textarea"
-                            placeholder="Please enter description"
-                            rules={[{ required: true, message: 'Please enter description' }]}
-                            style={{ width: "100%" }}
-                        />
                     </Col>
                 </Row>
             </Form>

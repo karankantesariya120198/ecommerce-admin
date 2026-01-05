@@ -1,22 +1,64 @@
 const { readData, writeData, storeFile, getImageFile, deleteFile } = require('../utils/fileHelper');
-const { v4: uuidv4 } = require('uuid');
+const { sendResponse } = require('../utils/responseHelper');
+const SubCategories = require('../models/subcategories');
+const Categories = require('../models/categories');
 
 const subcategoryFile = 'subcategories.json';
 
-exports.getSubcategories = (req, res) => {
-    try {
-        const subcategories = readData(subcategoryFile);
-        const categories = readData('categories.json');
+const validateSubcategoryData = (data) => {
+    const { name, slug, description, category_id, status, featured, specifications, icon } = data;
+    const errors = {};
+    if (!name || typeof name !== 'string' || !name.trim()) {
+        errors.name = ['Please enter a valid category name.'];
+    }
 
-        const subcategoriesWithDetails = subcategories.map(cat => {
-            let image = cat.fileId ? getImageFile(cat.fileId, 'subcategory') : null;
-            let category = categories.find(c => c.id === cat.categoryId);
+    if (!slug || typeof slug !== 'string' || !slug.trim()) {
+        errors.slug = ['Please enter a valid category slug.'];
+    }
+
+    if (!description || typeof description !== 'string' || !description.trim()) {
+        errors.description = ['Please enter a valid category description.'];
+    }
+
+    if (category_id && typeof category_id !== 'integer') {
+        errors.category_id = ['Category ID must be a string.'];
+    } else if (category_id) {
+        const category = Categories.findById(category_id);
+        if (!category) {
+            errors.category_id = ['Category does not exist.'];
+        }
+    }
+
+    if (status !== undefined && ![0, 1].includes(status)) {
+        errors.status = ['Please choose a valid status.'];
+    }
+
+    if (featured !== undefined && typeof featured !== 'boolean') {
+        errors.featured = ['Featured must be a boolean.'];
+    }
+
+    if (specifications && !Array.isArray(specifications)) {
+        errors.specifications = ['Specifications must be there.'];
+    }
+
+    if (icon && data.icon[0] && !data.icon[0].type.startsWith('image/')) {
+        errors.icon = ['Please upload a valid subcategory icon image.'];
+    }
+
+    return errors;
+};
+
+exports.getSubcategories = async (req, res) => {
+    try {
+        const subcategories = await SubCategories.findAll(req.user.id);
+
+        const subcategoriesWithDetails = await Promise.all(subcategories.map(async (subcat) => {
+            let image = subcat.file_id ? await getImageFile(subcat.file_id) : null;
             return {
-            ...cat,
-            file: image,
-            category: category ? { id: category.id, name: category.name } : null
+                ...subcat,
+                file: image
             };
-        });
+        }));
 
         res.status(200).json(subcategoriesWithDetails);
     } catch (error) {
@@ -51,65 +93,37 @@ exports.fetchSubcategory = (req, res) => {
     }
 }
 
-exports.createSubcategory = (req, res) => {
+exports.createSubcategory = async (req, res) => {
     try {
-        const { name, icon, categoryId, status, description } = req.body;
-        if (!icon[0]) {
-            return res.status(400).json({ message: 'Please upload a valid subcategory icon image.' });
+        const errors = validateSubcategoryData(req.body);
+        if (Object.keys(errors).length > 0) {
+            return sendResponse(res, 400, false, null, 'Validation failed', errors);
         }
+
+        const { name, slug, description, category_id, status, featured, specifications, icon } = req.body;
         const subcategoryIcon = icon[0];
-
-        // Validate name
-        if (!name || typeof name !== 'string' || !name.trim()) {
-            return res.status(400).json({ message: 'Please enter subcategory name' });
-        }
-
-        // Validate icon (expecting an uploaded image file)
-        if (!subcategoryIcon || !subcategoryIcon.type.startsWith('image/')) {
-            return res.status(400).json({ message: 'Please upload a valid subcategory icon image.' });
-        }
-
-        // Validate categoryId
-        if (!categoryId || typeof categoryId !== 'string' || !categoryId.trim()) {
-            return res.status(400).json({ message: 'Invalid or missing category ID' });
-        }
-
-        // Check if categoryId exists in categories
-        let categories = readData('categories.json');
-        if (!categories.some(cat => cat.id === categoryId)) {
-            return res.status(400).json({ message: 'Category does not exist' });
-        }
-
-        // Check if status exists or not
-        if (!status || typeof status !== 'string' || !status.trim()) {
-            return res.status(400).json({ message: 'Invalid or missing status' });
-        }
-
-        // Check if description exists or not
-        if (!description || typeof description !== 'string' || !description.trim()) {
-            return res.status(400).json({ message: 'Invalid or missing description' });
-        }
-
-        let subcategories = readData(subcategoryFile);
+        let subcategories = SubCategories.findAll(req.user.id);
     
         // Check for duplicate subcategory name
-        if (subcategories.some(cat => cat.name.toLowerCase() === name.toLowerCase())) {
+        if (subcategories.some(cat => cat.name.toLowerCase() === req.body.name.toLowerCase())) {
             return res.status(409).json({ message: 'Subcategory name already exists.' });
         }
 
-        const fileId = storeFile(subcategoryIcon, 'subcategory');
-        const newSubcategory = {
-            id: uuidv4(),
-            name: name.trim(),
-            fileId: fileId,
-            categoryId: categoryId,
-            status: status,
-            description: description,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
+        const fileId = await storeFile(subcategoryIcon, 'subcategory', 'subcategory');
+        let newSubcategory = {
+            "user_id": req.user.id,
+            "name": name.trim(),
+            "slug": slug.trim(),
+            "description": description,
+            "category_id": category_id || null,
+            "status": status || false,
+            "featured": featured || false,
+            "specifications": JSON.stringify(Array.isArray(specifications) ? specifications : []),
+            "file_id": fileId,
+            "created_at": new Date(),
+            "updated_at": new Date()
         };
-        subcategories.push(newSubcategory);
-        writeData(subcategoryFile, subcategories);
+        newSubcategory = await SubCategories.create(newSubcategory);
         res.status(201).json(newSubcategory);
     } catch (error) {
         console.error("Create Subcategory Api:", error.stack);

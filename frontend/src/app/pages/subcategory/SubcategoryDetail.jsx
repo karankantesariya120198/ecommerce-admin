@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card,
   Descriptions,
@@ -181,7 +181,11 @@ const SubcategoryDetail = () => {
     }
 
     return (
-        <div>
+        <div style={{
+            minHeight: '100vh',
+            background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+            padding: '32px 0',
+        }}>
             <Row style={{ marginBlockEnd: "10px" }}>
                 <Col span={24}>
                     <BreadcrumbItem
@@ -193,6 +197,10 @@ const SubcategoryDetail = () => {
                             {
                                 title: 'Subcategory',
                                 path: '/subcategories'
+                            },
+                            {
+                                title: subcategory.name,
+                                path: `/subcategories/${subcategory.id}`
                             }
                         ]}
                     />

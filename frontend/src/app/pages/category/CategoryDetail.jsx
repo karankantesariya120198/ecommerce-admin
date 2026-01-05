@@ -137,7 +137,7 @@ const CategoryDetail = () => {
     return (
         <div style={{
             minHeight: '100vh',
-            // background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+            background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
             padding: '32px 0',
         }}>
             <Row style={{ marginBlockEnd: "15px" }}>

@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { Button, Card, Col, Popconfirm, Row, Space, Tag } from "antd";
+import { Badge, Button, Card, Col, Image, Popconfirm, Row, Space, Tag } from "antd";
 import { DeleteOutlined, EditOutlined, EyeOutlined, PlusOutlined } from "@ant-design/icons";
 import { BreadcrumbItem, ReusableTable } from "../../components/common";
 import { FormButton } from "../../components/common/forms";
 import { SubcategoryForm } from "../index";
-import { fetchSubcategories } from '../../store/slices/index'
+import { fetchSubcategories, deleteSubcategory } from '../../store/slices/index'
 
 const SubcategoryList = () => {
     const [subcategories, setSubcategories] = useState([]); // Replace with actual data fetching logic
@@ -34,106 +34,121 @@ const SubcategoryList = () => {
         fetchData();
     }, [dispatch]);
 
-    const handleEdit = (record) => {
-        setEditingSubcategory(record);
-        setIsModalVisible(true);
-    };
-
-    const handleDelete = (id) => {
-        // Delete logic here
-        setSubcategories(subcategories.filter(item => item.id !== id));
-        message.success('Subcategory deleted successfully');
+    // Action handler for table
+    const handleTableAction = (action, record) => {
+        if (action === 'edit') {
+            setEditingSubcategory(record);
+            setIsModalVisible(true);
+        } else if (action === 'delete') {
+            dispatch(deleteSubcategory(record.id))
+                .then(() => dispatch(fetchSubcategories()))
+                .catch(err => console.error('Error deleting subcategory:', err));
+        } else if (action === 'view') {
+            navigate(`/subcategories/${record.id}`);
+        }
     };
 
     const handleModalOk = (success) => {
         if (success) {
             setIsModalVisible(false);
+            setEditingSubcategory(null);
             fetchData(); // Refresh table after add/update
         }
     };
 
     const handleModalCancel = () => {
         setIsModalVisible(false);
-    };
-
-    const handleView = (id) => {
-        navigate(`/subcategories/${id}`);
+        setEditingSubcategory(null);
     };
 
     const columns = [
         {
-            title: 'Index',
-            key: 'index',
-            width: 50,
-            render: (_, __, index) => index + 1,
-        },
-        {
-            title: 'Name',
+            title: 'Subcategory',
             dataIndex: 'name',
             key: 'name',
             render: (text, record) => (
-                <Button type="link" onClick={() => handleView(record.id)}>
-                    {text}
-                </Button>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <div style={{ position: 'relative', marginRight: 10 }}>
+                        {record.featured && (
+                            <Badge.Ribbon text="Featured" style={{ top: -10, left: -10, zIndex: 1, background: 'linear-gradient(135deg, #6153e19c, #04c0fe80)' }} />
+                        )}
+                        <Image
+                            width={75}
+                            height={75}
+                            src={record.file ? record.file.base64Url : null}
+                            alt={text}
+                            style={{ objectFit: 'cover', borderRadius: 4 }}
+                        />
+                    </div>
+                    <div>
+                        <div style={{ fontWeight: 500 }}>{text}</div>
+                        <div style={{ color: '#8c8c8c', fontSize: '12px' }}>{record.slug}</div>
+                    </div>
+                </div>
             ),
             sorter: (a, b) => a.name.localeCompare(b.name),
         },
         {
             title: 'Category',
-            dataIndex: 'category',
-            key: 'category',
-            render: (category) => category?.name || 'N/A',
-            sorter: (a, b) => a.category.name.localeCompare(b.category.name),
+            dataIndex: 'category_name',
+            key: 'category_name',
+            sorter: (a, b) => a.category_name.localeCompare(b.category_name),
         },
         {
-            title: 'Products',
-            dataIndex: 'products',
-            key: 'products',
-            render: (products) => <Tag color="blue">{products} products</Tag>,
+            title: 'Description',
+            dataIndex: 'description',
+            key: 'description',
+            render: (text) => (
+                <div style={{ maxWidth: '200px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {text}
+                </div>
+            ),
+            sorter: (a, b) => a.description.localeCompare(b.description),
         },
         {
             title: 'Status',
             dataIndex: 'status',
             key: 'status',
             render: (status) => (
-                <Tag color={status === 'active' ? 'green' : 'red'}>
-                    {status.toUpperCase()}
+                <Tag color={status ? 'green' : 'red'}>
+                    {status ? 'Active' : 'Inactive'}
                 </Tag>
             ),
             sorter: (a, b) => a.status - b.status,
         },
         {
             title: 'Created At',
-            render: (_, record) => !record.createdAt ? null : new Date(record.createdAt).toLocaleString(),
-            sorter: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
+            render: (_, record) => !record.created_at ? null : new Date(record.created_at).toLocaleString(),
+            sorter: (a, b) => new Date(a.created_at) - new Date(b.created_at),
         },
         {
             title: 'Updated At',
-            render: (_, record) => !record.updatedAt ? null : new Date(record.updatedAt).toLocaleString(),
-            sorter: (a, b) => new Date(a.updatedAt) - new Date(b.updatedAt),
+            render: (_, record) => !record.updated_at ? null : new Date(record.updated_at).toLocaleString(),
+            sorter: (a, b) => new Date(a.updated_at) - new Date(b.updated_at),
         },
         {
             title: 'Actions',
             key: 'actions',
             render: (_, record) => (
                 <Space size="middle">
-                    <Button 
-                        icon={<EyeOutlined />} 
+                    <Button
+                        icon={<EyeOutlined />}
                         size="small"
-                        onClick={() => handleView(record.id)}
+                        onClick={() => handleTableAction('view', record)}
                     >
-                        View
+                            View
                     </Button>
                     <Button 
                         icon={<EditOutlined />} 
                         size="small"
-                        onClick={() => handleEdit(record)}
+                        onClick={() => handleTableAction('edit', record)}
                     >
                         Edit
                     </Button>
                     <Popconfirm
-                        title="Are you sure to delete this subcategory?"
-                        onConfirm={() => handleDelete(record.id)}
+                        title="Are you sure to delete this category?"
+                        description="This will also delete all subcategories and products under this category."
+                        onConfirm={() => handleTableAction('delete', record)}
                         okText="Yes"
                         cancelText="No"
                     >
@@ -151,8 +166,8 @@ const SubcategoryList = () => {
     ];
 
     return (
-        <div>
-            <Row style={{ marginBlockEnd: "10px" }}>
+        <>
+            <Row style={{ marginBlockEnd: "20px" }}>
                 <Col span={24}>
                     <BreadcrumbItem
                         items={[
@@ -169,12 +184,18 @@ const SubcategoryList = () => {
                 </Col>
             </Row>
 
-            <Card>
-                <Row gutter={16} style={{ marginBottom: 16 }}>
+            <Card
+                style={{ 
+                    boxShadow: '0 10px 12px rgba(0,0,0,0.06)',
+                    borderRadius: 16,
+                }}
+            >
+                <Row style={{ marginBlockEnd: "20px" }}>
                     <Col span={12}>
                         <h2 style={{ margin: 0 }}>Subcategories</h2>
+                        <p style={{ margin: 0, color: '#8c8c8c' }}>Manage your subcategories</p>
                     </Col>
-                    <Col span={12} style={{ textAlign: 'right' }}>
+                    <Col span={12} style={{ textAlign: 'right', alignItems: 'center', display: 'flex', justifyContent: 'flex-end' }}>
                         <Space>
                             <FormButton
                                 type='primary'
@@ -187,20 +208,23 @@ const SubcategoryList = () => {
                         </Space>
                     </Col>
                 </Row>
-                
-                <ReusableTable
-                    rowKey='id'
-                    loading={loading}
-                    dataSource={subcategories}
-                    columns={columns}
-                    searchKey="name"
-                    showSearch={true}
-                    showTotal={true}
-                    pageSizeOptions={['5', '10', '20', '50']}
-                    searchPlaceholder="subcategory name"
-                    size="middle"
-                    scroll={{ x: true }}
-                />
+                <Row>
+                    <Col span={24}>
+                        <ReusableTable
+                            rowKey='id'
+                            loading={loading}
+                            dataSource={subcategories}
+                            columns={columns}
+                            searchKey="name"
+                            showSearch={true}
+                            showTotal={true}
+                            pageSizeOptions={['5', '10', '20', '50']}
+                            searchPlaceholder="subcategory name"
+                            size="middle"
+                            scroll={{ x: true }}
+                        />
+                    </Col>
+                </Row>
             </Card>
 
             <SubcategoryForm
@@ -209,7 +233,7 @@ const SubcategoryList = () => {
                 onCancel={handleModalCancel}
                 initialValues={editingSubcategory}
             />
-        </div>
+        </>
     );
 };
 

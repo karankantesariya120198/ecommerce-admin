@@ -6,6 +6,7 @@ import { PlusOutlined, EyeOutlined, EditOutlined, DeleteOutlined } from "@ant-de
 import { BreadcrumbItem, ReusableTable } from "../../components/common";
 import ProductForm from "./ProductForm";
 import { deleteProduct, fetchProducts } from "../../store/slices";
+import { FormButton } from "../../components/common/forms";
 
 const ProductList = () => {
     const [products, setProducts] = useState([]); // Replace with actual data fetching logic
@@ -64,7 +65,7 @@ const ProductList = () => {
             title: 'Category',
             dataIndex: 'category',
             key: 'category',
-            render: (category, record) => <Tag color="blue">{record.category.name}</Tag>,
+            render: (category, record) => <Tag color="blue">{record.category ? record.category.name ?? 'N/A' : 'N/A'}</Tag>,
         },
         {
             title: 'Price',
@@ -99,7 +100,7 @@ const ProductList = () => {
                 <div>
                     <Rate disabled defaultValue={rating} style={{ fontSize: 14 }} />
                     <div style={{ fontSize: '12px', color: '#8c8c8c' }}>
-                        {rating} ({record.reviews} reviews)
+                        {rating} ({record.reviews ?? 0} reviews)
                     </div>
                 </div>
             ),
@@ -181,7 +182,7 @@ const ProductList = () => {
 
     return (
         <div>
-            <Row style={{ marginBlockEnd: "10px" }}>
+            <Row style={{ marginBlockEnd: "20px" }}>
                 <Col span={24}>
                     <BreadcrumbItem
                         items={[
@@ -198,86 +199,47 @@ const ProductList = () => {
                 </Col>
             </Row>
 
-            <Card>
-                <Row gutter={16} style={{ marginBottom: 16 }}>
+            <Card
+                style={{ 
+                    boxShadow: '0 10px 12px rgba(0,0,0,0.06)',
+                    borderRadius: 16,
+                }}
+            >
+                <Row gutter={16} style={{ marginBottom: "20px" }}>
                     <Col span={12}>
                         <h2 style={{ margin: 0 }}>Products</h2>
                         <p style={{ margin: 0, color: '#8c8c8c' }}>Manage your product inventory</p>
                     </Col>
-
-                    <Col span={12} style={{ textAlign: 'right' }}>
+                    <Col span={12} style={{ textAlign: 'right', alignItems: 'center', display: 'flex', justifyContent: 'flex-end' }}>
                         <Space>
-                            <Button 
-                                type="primary" 
+                            <FormButton
+                                type='primary'
+                                variant='outlined'
                                 icon={<PlusOutlined />}
                                 onClick={() => { setIsModalVisible(true); setEditingProduct(null); }}
                             >
                                 Add Product
-                            </Button>
+                            </FormButton>
                         </Space>
                     </Col>
                 </Row>
-
-                {/* Filters */}
-                {/* <Row gutter={16} style={{ marginBottom: 16 }}>
-                    <Col span={6}>
-                        <div style={{ marginBottom: 8 }}>Category</div>
-                        <Select
-                            value={filterCategory}
-                            onChange={setFilterCategory}
-                            style={{ width: '100%' }}
-                        >
-                            <Option value="all">All Categories</Option>
-                            <Option value="Electronics">Electronics</Option>
-                            <Option value="Clothing">Clothing</Option>
-                            <Option value="Home & Kitchen">Home & Kitchen</Option>
-                            <Option value="Books">Books</Option>
-                        </Select>
+                <Row>
+                    <Col span={24}>
+                        <ReusableTable
+                            rowKey='id'
+                            loading={loading}
+                            dataSource={products}
+                            columns={productsColumns}
+                            searchKey="name"
+                            showSearch={true}
+                            showTotal={true}
+                            pageSizeOptions={['5', '10', '20', '50']}
+                            searchPlaceholder="product name"
+                            size="middle"
+                            scroll={{ x: true }}
+                        />
                     </Col>
-                    <Col span={6}>
-                        <div style={{ marginBottom: 8 }}>Status</div>
-                        <Select
-                            value={filterStatus}
-                            onChange={setFilterStatus}
-                            style={{ width: '100%' }}
-                        >
-                            <Option value="all">All Status</Option>
-                            <Option value="published">Published</Option>
-                            <Option value="draft">Draft</Option>
-                        </Select>
-                    </Col>
-                    <Col span={6}>
-                        <div style={{ marginBottom: 8 }}>Stock Status</div>
-                        <Select defaultValue="all" style={{ width: '100%' }}>
-                            <Option value="all">All Stock</Option>
-                            <Option value="in_stock">In Stock</Option>
-                            <Option value="low_stock">Low Stock</Option>
-                            <Option value="out_of_stock">Out of Stock</Option>
-                        </Select>
-                    </Col>
-                    <Col span={6}>
-                        <div style={{ marginBottom: 8 }}>Featured</div>
-                        <Select defaultValue="all" style={{ width: '100%' }}>
-                            <Option value="all">All Products</Option>
-                            <Option value="featured">Featured Only</Option>
-                            <Option value="not_featured">Not Featured</Option>
-                        </Select>
-                    </Col>
-                </Row> */}
-
-                <ReusableTable
-                    rowKey='id'
-                    loading={loading}
-                    dataSource={products}
-                    columns={productsColumns}
-                    searchKey="name"
-                    showSearch={true}
-                    showTotal={true}
-                    pageSizeOptions={['5', '10', '20', '50']}
-                    searchPlaceholder="product name"
-                    size="middle"
-                    scroll={{ x: true }}
-                />
+                </Row>
             </Card>
 
             <ProductForm
